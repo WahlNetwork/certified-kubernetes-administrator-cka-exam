@@ -19,3 +19,5 @@
 ## Perform a version upgrade on a Kubernetes cluster using Kubeadm
 
 ## Implement etcd backup and restore
+
+- [Backing up an etcd cluster](https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/#backing-up-an-etcd-cluster)
