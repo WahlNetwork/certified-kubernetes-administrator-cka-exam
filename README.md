@@ -1,3 +1,5 @@
+![Version 1.19](https://img.shields.io/badge/version-1.19-blue)
+
 # Certified Kubernetes Administrator (CKA) Exam Study Guide
 
 Resources to prepare for the Certified Kubernetes Administrator exam. The CNCF curriculum is posted [here](https://github.com/cncf/curriculum).
