@@ -6,7 +6,10 @@
   - [Manage a highly-available Kubernetes cluster](#manage-a-highly-available-kubernetes-cluster)
   - [Provision underlying infrastructure to deploy a Kubernetes cluster](#provision-underlying-infrastructure-to-deploy-a-kubernetes-cluster)
   - [Perform a version upgrade on a Kubernetes cluster using Kubeadm](#perform-a-version-upgrade-on-a-kubernetes-cluster-using-kubeadm)
-    - [Upgrade the first control plane node](#upgrade-the-first-control-plane-node)
+    - [First Control Plane Node](#first-control-plane-node)
+    - [Additional Control Plane Nodes](#additional-control-plane-nodes)
+    - [Upgrade Control Plane Node kubectl and kubelet tools](#upgrade-control-plane-node-kubectl-and-kubelet-tools)
+    - [Upgrade Worker Nodes](#upgrade-worker-nodes)
   - [Implement etcd backup and restore](#implement-etcd-backup-and-restore)
     - [Snapshot the keyspace](#snapshot-the-keyspace)
     - [Restore from snapshot](#restore-from-snapshot)
@@ -27,11 +30,9 @@
 
 > Note: All containers are restarted after upgrade, because the container spec hash value is changed. Upgrades are constrained from one minor version to the next minor version.
 
-### Upgrade the first control plane node
+### First Control Plane Node
 
-**Example**:
-
-The following command will update the kubeadm tool and verify the new version:
+Update the kubeadm tool and verify the new version
 
 > Note: The `--allow-change-held-packages` flag is used because kubeadm updates should be held to prevent automated updates.
 
@@ -41,13 +42,100 @@ apt-get install -y --allow-change-held-packages kubeadm=1.19.x-00
 kubeadm version
 ```
 
-Drain the node to mark it as unschedulable:
+---
+
+[Drain](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#drain) the node to mark as unschedulable
 
 `kubectl drain $NODENAME --ignore-daemonsets`
 
-Blah
+<details><summary>Drain Diagram</summary>
+
+![drain](https://kubernetes.io/images/docs/kubectl_drain.svg)
+
+</details>
+
+---
+
+Perform an upgrade plan to validate that your cluster can be upgraded
+
+> Note: This also fetches the versions you can upgrade to and shows a table with the component config version states.
 
 `sudo kubeadm upgrade plan`
+
+---
+
+Upgrade the cluster
+
+`sudo kubeadm upgrade apply v1.19.x`
+
+---
+
+[Uncordon](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#uncordon) the node to mark as schedulable
+
+`kubectl uncordon $NODENAME`
+
+### Additional Control Plane Nodes
+
+Repeat the [Upgrade the first control plane node](#upgrade-the-first-control-plane-node) steps while replacing the [Upgrade the cluster](#upgrade-the-cluster) step using the command below:
+
+`sudo kubeadm upgrade node`
+
+### Upgrade Control Plane Node kubectl and kubelet tools
+
+Upgrade the kubelet and kubectl on all control plane nodes
+
+```bash
+apt-get update && \
+apt-get install -y --allow-change-held-packages kubelet=1.19.x-00 kubectl=1.19.x-00
+```
+
+---
+
+Restart the kubelet
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl restart kubelet
+```
+
+### Upgrade Worker Nodes
+
+Upgrade kubeadm
+
+```bash
+apt-get update && \
+apt-get install -y --allow-change-held-packages kubeadm=1.19.x-00
+```
+
+---
+
+Drain the node
+
+`kubectl drain $NODENAME --ignore-daemonsets`
+
+---
+
+Upgrade the kubelet configuration
+
+`sudo kubeadm upgrade node`
+
+---
+
+Upgrade kubelet and kubectl
+
+```bash
+apt-get update && \
+apt-get install -y --allow-change-held-packages kubelet=1.19.x-00 kubectl=1.19.x-00
+
+sudo systemctl daemon-reload
+sudo systemctl restart kubelet
+```
+
+---
+
+Uncordon the node
+
+`kubectl uncordon $NODENAME`
 
 ## Implement etcd backup and restore
 
@@ -57,29 +145,21 @@ Blah
 
 ### Snapshot the keyspace
 
-**Command**:
+Use `etcdctl snapshot save`.
 
-`etcdctl snapshot save`
-
-**Example**:
-
-The following command snapshots the keyspace served by \$ENDPOINT to the file snapshot.db:
+Snapshot the keyspace served by \$ENDPOINT to the file snapshot.db:
 
 `ETCDCTL_API=3 etcdctl --endpoints $ENDPOINT snapshot save snapshot.db`
 
 ### Restore from snapshot
 
-Restoring overwrites some snapshot metadata (specifically, the member ID and cluster ID); the member loses its former identity.
+Use `etcdctl snapshot restore`.
 
-Snapshot integrity is verified when restoring from a snapshot using an integrity hash created by `etcdctl snapshot save`, but not when restoring from a file copy.
+> Note: Restoring overwrites some snapshot metadata (specifically, the member ID and cluster ID); the member loses its former identity.
+>
+> Note: Snapshot integrity is verified when restoring from a snapshot using an integrity hash created by `etcdctl snapshot save`, but not when restoring from a file copy.
 
-**Command**:
-
-`etcdctl snapshot restore`
-
-**Example**:
-
-The following creates new etcd data directories (m1.etcd, m2.etcd, m3.etcd) for a three member cluster:
+Create new etcd data directories (m1.etcd, m2.etcd, m3.etcd) for a three member cluster:
 
 ```bash
 $ ETCDCTL_API=3 etcdctl snapshot restore snapshot.db \
