@@ -76,7 +76,7 @@ Upgrade the cluster
 
 ### Additional Control Plane Nodes
 
-Repeat the [Upgrade the first control plane node](#upgrade-the-first-control-plane-node) steps while replacing the [Upgrade the cluster](#upgrade-the-cluster) step using the command below:
+Repeat the first control plane node steps while replacing the "upgrade the cluster" step using the command below:
 
 `sudo kubeadm upgrade node`
 
