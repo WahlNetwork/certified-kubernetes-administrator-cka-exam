@@ -6,6 +6,7 @@
   - [Manage a highly-available Kubernetes cluster](#manage-a-highly-available-kubernetes-cluster)
   - [Provision underlying infrastructure to deploy a Kubernetes cluster](#provision-underlying-infrastructure-to-deploy-a-kubernetes-cluster)
   - [Perform a version upgrade on a Kubernetes cluster using Kubeadm](#perform-a-version-upgrade-on-a-kubernetes-cluster-using-kubeadm)
+    - [Upgrade the first control plane node](#upgrade-the-first-control-plane-node)
   - [Implement etcd backup and restore](#implement-etcd-backup-and-restore)
     - [Snapshot the keyspace](#snapshot-the-keyspace)
     - [Restore from snapshot](#restore-from-snapshot)
@@ -20,10 +21,39 @@
 
 ## Perform a version upgrade on a Kubernetes cluster using Kubeadm
 
+- [Upgrading kubeadm clusters](https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/)
+- [Safely Drain a Node while Respecting the PodDisruptionBudget](https://kubernetes.io/docs/tasks/administer-cluster/safely-drain-node/)
+- [Cluster Management: Maintenance on a Node](https://kubernetes.io/docs/tasks/administer-cluster/cluster-management/#maintenance-on-a-node)
+
+> Note: All containers are restarted after upgrade, because the container spec hash value is changed. Upgrades are constrained from one minor version to the next minor version.
+
+### Upgrade the first control plane node
+
+**Example**:
+
+The following command will update the kubeadm tool and verify the new version:
+
+> Note: The `--allow-change-held-packages` flag is used because kubeadm updates should be held to prevent automated updates.
+
+```bash
+apt-get update && \
+apt-get install -y --allow-change-held-packages kubeadm=1.19.x-00
+kubeadm version
+```
+
+Drain the node to mark it as unschedulable:
+
+`kubectl drain $NODENAME --ignore-daemonsets`
+
+Blah
+
+`sudo kubeadm upgrade plan`
+
 ## Implement etcd backup and restore
 
 - [Operating etcd clusters for Kubernetes: Backing up an etcd cluster](https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/#backing-up-an-etcd-cluster)
 - [Etcd Documentation: Disaster Recovery](https://etcd.io/docs/v3.4.0/op-guide/recovery/)
+- [Kubernetes Tips: Backup and Restore Etcd](https://medium.com/better-programming/kubernetes-tips-backup-and-restore-etcd-97fe12e56c57)
 
 ### Snapshot the keyspace
 
@@ -33,7 +63,7 @@
 
 **Example**:
 
-The following command snapshots the keyspace served by $ENDPOINT to the file snapshot.db:
+The following command snapshots the keyspace served by \$ENDPOINT to the file snapshot.db:
 
 `ETCDCTL_API=3 etcdctl --endpoints $ENDPOINT snapshot save snapshot.db`
 
@@ -51,7 +81,7 @@ Snapshot integrity is verified when restoring from a snapshot using an integrity
 
 The following creates new etcd data directories (m1.etcd, m2.etcd, m3.etcd) for a three member cluster:
 
-```
+```bash
 $ ETCDCTL_API=3 etcdctl snapshot restore snapshot.db \
   --name m1 \
   --initial-cluster m1=http://host1:2380,m2=http://host2:2380,m3=http://host3:2380 \
@@ -67,4 +97,4 @@ $ ETCDCTL_API=3 etcdctl snapshot restore snapshot.db \
   --initial-cluster m1=http://host1:2380,m2=http://host2:2380,m3=http://host3:2380 \
   --initial-cluster-token etcd-cluster-1 \
   --initial-advertise-peer-urls http://host3:2380
-  ```
+```
