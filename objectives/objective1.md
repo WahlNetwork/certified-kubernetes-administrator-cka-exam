@@ -18,6 +18,19 @@
 
 ## Use Kubeadm to install a basic cluster
 
+- [Creating a cluster with kubeadm](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/)
+
+The essential steps are:
+
+- Install Ubuntu 18.04 LTS on an instance with at least 2 vCPUs and 2 GiB of memory (e.g. `t3a.small`)
+  - [Disable Swap](https://askubuntu.com/questions/214805/how-do-i-disable-swap) using the user data field for the instance(s)
+- [Configure iptables](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#letting-iptables-see-bridged-traffic) to see bridged traffic
+- [Install the Docker container runtime](https://kubernetes.io/docs/setup/production-environment/container-runtimes/#docker)
+- [Install kubeadm, kubelet, and kubectl](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#installing-kubeadm-kubelet-and-kubectl) on each node
+- [kubeadm init](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/#initializing-your-control-plane-node) on the control node
+- [kubeadm join](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/#join-nodes) on the worker node(s)
+- Optionally, [taint the master](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/) to accept pods
+
 ## Manage a highly-available Kubernetes cluster
 
 ## Provision underlying infrastructure to deploy a Kubernetes cluster
