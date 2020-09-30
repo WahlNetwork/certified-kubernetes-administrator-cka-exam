@@ -25,7 +25,7 @@
 
 Official documentation: [Creating a cluster with kubeadm](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/)
 
-> Terraform code is available [here](../code/tf-cluster-asg/README.md) to create the resources necessary to experiment with `kubeadm`
+> Terraform code is available [here](../code/tf-cluster-asg/) to create the resources necessary to experiment with `kubeadm`
 
 ### Kubeadm Tasks for All Nodes
 
