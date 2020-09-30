@@ -3,6 +3,11 @@
 - [Objective 1: Cluster Architecture, Installation & Configuration (25%)](#objective-1-cluster-architecture-installation--configuration-25)
   - [Manage role based access control (RBAC)](#manage-role-based-access-control-rbac)
   - [Use Kubeadm to install a basic cluster](#use-kubeadm-to-install-a-basic-cluster)
+    - [Kubeadm Tasks for All Nodes](#kubeadm-tasks-for-all-nodes)
+    - [Kubeadm Tasks for Single Control Node](#kubeadm-tasks-for-single-control-node)
+    - [Kubeadm Tasks for Worker Node(s)](#kubeadm-tasks-for-worker-nodes)
+    - [Kubeadm Troubleshooting](#kubeadm-troubleshooting)
+    - [Kubeadm Optional Tasks](#kubeadm-optional-tasks)
   - [Manage a highly-available Kubernetes cluster](#manage-a-highly-available-kubernetes-cluster)
   - [Provision underlying infrastructure to deploy a Kubernetes cluster](#provision-underlying-infrastructure-to-deploy-a-kubernetes-cluster)
   - [Perform a version upgrade on a Kubernetes cluster using Kubeadm](#perform-a-version-upgrade-on-a-kubernetes-cluster-using-kubeadm)
@@ -18,31 +23,79 @@
 
 ## Use Kubeadm to install a basic cluster
 
-- [Creating a cluster with kubeadm](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/)
+Official documentation: [Creating a cluster with kubeadm](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/)
 
-The essential steps are:
+### Kubeadm Tasks for All Nodes
 
-- Install Ubuntu 18.04 LTS on an instance with at least 2 vCPUs and 2 GiB of memory (e.g. `t3a.small`)
-  - [Disable Swap](https://askubuntu.com/questions/214805/how-do-i-disable-swap) using the user data field for the instance(s)
-- [Configure iptables](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#letting-iptables-see-bridged-traffic) to see bridged traffic
+- Create Amazon EC2 Instances
+  - Create an AWS Launch Template using an Ubuntu 18.04 LTS image (or newer) of size `t3a.small` (2 CPU, 2 GiB Memory).
+  - Disable the [swap](https://askubuntu.com/questions/214805/how-do-i-disable-swap) file.
+    - Note: This can be validated by using the console command `free` when SSH'd to the instance. The swap space total should be 0.
+  - Consume this template as part of an Auto Scaling Group of 1 or more instances. This makes deployment of new instances and removal of old instances trivial.
+- [Configure iptables](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#letting-iptables-see-bridged-traffic)
+  - This allows iptables to see bridged traffic.
 - [Install the Docker container runtime](https://kubernetes.io/docs/setup/production-environment/container-runtimes/#docker)
-- [Install kubeadm, kubelet, and kubectl](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#installing-kubeadm-kubelet-and-kubectl) on each node
-- [kubeadm init](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/#initializing-your-control-plane-node) on the control node using the Calico `--pod-network-cidr` value
-  - If using `kubeadm init` without a pod network CIDR the CoreDNS pods will remain [stuck in pending state](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/#coredns-or-kube-dns-is-stuck-in-the-pending-state)
-  - If goofed, use `kubeadm reset` and `rm -rf .kube` in the user home directory to remove the old config (copied from admin.conf) and avoid [TLS certificate errors](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/#tls-certificate-errors)
-  - If seeing `error: error loading config file "/etc/kubernetes/admin.conf": open /etc/kubernetes/admin.conf: permission denied` it likely means the `KUBECONFIG` variable is set to that path, try `unset KUBECONFIG` to use the  `$HOME/.kube/config` file.
-  - Write down the `kubeadm join` output for later use or use [the join instructions](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/#join-nodes) to recreate the command later.
-    - Example `kubeadm join 10.121.9.194:6443 --token 12345678901234567890 --discovery-token-ca-cert-hash sha256:123456789012345678901234567890123456789012345678901234567890`
-  - View the config with `kubectl config view` which includes the cluster server address (e.g. `server: https://10.121.9.194:6443`)
+  - The [docker-install](https://github.com/docker/docker-install) script is handy for this.
+- [Install kubeadm, kubelet, and kubectl](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#installing-kubeadm-kubelet-and-kubectl)
+
+Alternatively, use a `user-data` bash script attached to the Launch Template:
+
+```bash
+#!/bin/bash
+
+# Disable Swap
+sudo swapoff -a
+
+# Bridge Network
+sudo modprobe br_netfilter
+sudo cat <<'EOF' | sudo tee /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+EOF
+sudo sysctl --system
+
+# Install Docker
+sudo curl -fsSL https://get.docker.com -o /home/ubuntu/get-docker.sh
+sudo sh /home/ubuntu/get-docker.sh
+
+# Install Kube tools
+sudo apt-get update && sudo apt-get install -y apt-transport-https curl
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+cat <<'EOF' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+deb https://apt.kubernetes.io/ kubernetes-xenial main
+EOF
+sudo apt-get update
+sudo apt-get install -y kubelet kubeadm kubectl
+sudo apt-mark hold kubelet kubeadm kubectl
+```
+
+### Kubeadm Tasks for Single Control Node
+
+- Initialize the cluster
+  - Choose your Container Network Interface (CNI) plugin. This guide uses [Calico's CNI](https://docs.projectcalico.org/about/about-calico).
+  - Run `sudo kubeadm init --pod-network-cidr=192.168.0.0/16` to initialize the cluster and provide a pod network aligned to [Calico's default configuration](https://docs.projectcalico.org/getting-started/kubernetes/quickstart#create-a-single-host-kubernetes-cluster).
+  - Write down the `kubeadm join` output to [join worker nodes](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/#join-nodes) later in this guide.
+    - Example `kubeadm join 10.0.0.100:6443 --token 12345678901234567890 --discovery-token-ca-cert-hash sha256:123456789012345678901234567890123456789012345678901234567890`
 - [Install Calico](https://docs.projectcalico.org/getting-started/kubernetes/quickstart)
-- [kubeadm join](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/#join-nodes) on the worker node(s)
-- [Configure local kubectl access](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/#optional-controlling-your-cluster-from-machines-other-than-the-control-plane-node) with the admin.conf file.
+- [Configure local kubectl access](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/#optional-controlling-your-cluster-from-machines-other-than-the-control-plane-node)
+  - This step simply copies the `admin.conf` file into a location accessible for a regular user.
 
-The optional steps are:
+### Kubeadm Tasks for Worker Node(s)
 
-- [Install kubectl client locally on Windows](https://kubernetes.io/docs/tasks/tools/install-kubectl/#install-kubectl-on-windows)
-- [Taint the control node](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/) to accept pods
-- Deploy the "hello-node" app from the [minikube tutorial](https://kubernetes.io/docs/tutorials/hello-minikube/)
+- [Join the cluster](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/#join-nodes)
+  - Note: You can view the cluster config with `kubectl config view`. This includes the cluster server address (e.g. `server: https://10.0.0.100:6443`)
+
+### Kubeadm Troubleshooting
+
+- If using `kubeadm init` without a pod network CIDR the CoreDNS pods will remain [stuck in pending state](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/#coredns-or-kube-dns-is-stuck-in-the-pending-state)
+- Broke cluster and want to start over? Use `kubeadm reset` and `rm -rf .kube` in the user home directory to remove the old config and avoid [TLS certificate errors](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/#tls-certificate-errors)
+- If seeing `error: error loading config file "/etc/kubernetes/admin.conf": open /etc/kubernetes/admin.conf: permission denied` it likely means the `KUBECONFIG` variable is set to that path, try `unset KUBECONFIG` to use the `$HOME/.kube/config` file.
+
+### Kubeadm Optional Tasks
+
+- [Install kubectl client locally on Windows](https://kubernetes.io/docs/tasks/tools/install-kubectl/#install-kubectl-on-windows) for those using this OS.
+- Single node cluster? [Taint the control node](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/) to accept pods without dedicated worker nodes.
+- Deploy the "hello-node" app from the [minikube tutorial](https://kubernetes.io/docs/tutorials/hello-minikube/) to test basic functionality.
 
 ## Manage a highly-available Kubernetes cluster
 
