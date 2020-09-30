@@ -3,11 +3,11 @@
 - [Objective 1: Cluster Architecture, Installation & Configuration (25%)](#objective-1-cluster-architecture-installation--configuration-25)
   - [Manage role based access control (RBAC)](#manage-role-based-access-control-rbac)
   - [Use Kubeadm to install a basic cluster](#use-kubeadm-to-install-a-basic-cluster)
-    - [Tasks to perform on all nodes:](#tasks-to-perform-on-all-nodes)
-    - [Tasks to perform on the control node:](#tasks-to-perform-on-the-control-node)
-    - [Tasks to perform on the worker node(s):](#tasks-to-perform-on-the-worker-nodes)
-    - [Troubleshooting:](#troubleshooting)
-    - [Further Learning:](#further-learning)
+    - [Kubeadm Tasks for All Nodes](#kubeadm-tasks-for-all-nodes)
+    - [Kubeadm Tasks for Single Control Node](#kubeadm-tasks-for-single-control-node)
+    - [Kubeadm Tasks for Worker Node(s)](#kubeadm-tasks-for-worker-nodes)
+    - [Kubeadm Troubleshooting](#kubeadm-troubleshooting)
+    - [Kubeadm Optional Tasks](#kubeadm-optional-tasks)
   - [Manage a highly-available Kubernetes cluster](#manage-a-highly-available-kubernetes-cluster)
   - [Provision underlying infrastructure to deploy a Kubernetes cluster](#provision-underlying-infrastructure-to-deploy-a-kubernetes-cluster)
   - [Perform a version upgrade on a Kubernetes cluster using Kubeadm](#perform-a-version-upgrade-on-a-kubernetes-cluster-using-kubeadm)
@@ -25,7 +25,7 @@
 
 Official documentation: [Creating a cluster with kubeadm](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/)
 
-### Tasks to perform on all nodes:
+### Kubeadm Tasks for All Nodes
 
 - Create Amazon EC2 Instances
   - Create an AWS Launch Template using an Ubuntu 18.04 LTS image (or newer) of size `t3a.small` (2 CPU, 2 GiB Memory).
@@ -38,7 +38,7 @@ Official documentation: [Creating a cluster with kubeadm](https://kubernetes.io/
   - The [docker-install](https://github.com/docker/docker-install) script is handy for this.
 - [Install kubeadm, kubelet, and kubectl](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#installing-kubeadm-kubelet-and-kubectl)
 
-### Tasks to perform on the control node:
+### Kubeadm Tasks for Single Control Node
 
 - Initialize the cluster
   - Choose your Container Network Interface (CNI) plugin. This guide uses [Calico's CNI](https://docs.projectcalico.org/about/about-calico).
@@ -49,18 +49,18 @@ Official documentation: [Creating a cluster with kubeadm](https://kubernetes.io/
 - [Configure local kubectl access](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/#optional-controlling-your-cluster-from-machines-other-than-the-control-plane-node)
   - This step simply copies the `admin.conf` file into a location accessible for a regular user.
 
-### Tasks to perform on the worker node(s):
+### Kubeadm Tasks for Worker Node(s)
 
 - [Join the cluster](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/#join-nodes)
   - Note: You can view the cluster config with `kubectl config view`. This includes the cluster server address (e.g. `server: https://10.0.0.100:6443`)
 
-### Troubleshooting:
+### Kubeadm Troubleshooting
 
 - If using `kubeadm init` without a pod network CIDR the CoreDNS pods will remain [stuck in pending state](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/#coredns-or-kube-dns-is-stuck-in-the-pending-state)
 - Broke cluster and want to start over? Use `kubeadm reset` and `rm -rf .kube` in the user home directory to remove the old config and avoid [TLS certificate errors](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/troubleshooting-kubeadm/#tls-certificate-errors)
 - If seeing `error: error loading config file "/etc/kubernetes/admin.conf": open /etc/kubernetes/admin.conf: permission denied` it likely means the `KUBECONFIG` variable is set to that path, try `unset KUBECONFIG` to use the `$HOME/.kube/config` file.
 
-### Further Learning:
+### Kubeadm Optional Tasks
 
 - [Install kubectl client locally on Windows](https://kubernetes.io/docs/tasks/tools/install-kubectl/#install-kubectl-on-windows) for those using this OS.
 - Single node cluster? [Taint the control node](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/) to accept pods without dedicated worker nodes.
