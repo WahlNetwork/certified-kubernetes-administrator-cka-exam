@@ -6,5 +6,5 @@ locals {
   tag-environment     = "dev"
   security-group-name = "open-octo-dev-usw2"
   subnet-name         = "private1-octo-dev-usw2"
-  instance-type = "t3a.small"
+  instance-type       = "t3a.small"
 }
