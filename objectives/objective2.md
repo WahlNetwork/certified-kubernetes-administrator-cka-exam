@@ -1,6 +1,8 @@
-# Objective 2: Workloads & Scheduling (15%)
+# Objective 2: Workloads & Scheduling
 
-- [Objective 2: Workloads & Scheduling (15%)](#objective-2-workloads--scheduling-15)
+> ⚠ This section is not complete ⚠
+
+- [Objective 2: Workloads & Scheduling](#objective-2-workloads--scheduling)
   - [Understand deployments and how to perform rolling update and rollbacks](#understand-deployments-and-how-to-perform-rolling-update-and-rollbacks)
   - [Use ConfigMaps and Secrets to configure applications](#use-configmaps-and-secrets-to-configure-applications)
   - [Know how to scale applications](#know-how-to-scale-applications)

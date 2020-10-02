@@ -1,6 +1,8 @@
-# Objective 1: Cluster Architecture, Installation & Configuration (25%)
+# Objective 1: Cluster Architecture, Installation & Configuration
 
-- [Objective 1: Cluster Architecture, Installation & Configuration (25%)](#objective-1-cluster-architecture-installation--configuration-25)
+> ⚠ This section is not complete ⚠
+
+- [Objective 1: Cluster Architecture, Installation & Configuration](#objective-1-cluster-architecture-installation--configuration)
   - [Manage role based access control (RBAC)](#manage-role-based-access-control-rbac)
   - [Use Kubeadm to install a basic cluster](#use-kubeadm-to-install-a-basic-cluster)
     - [Kubeadm Tasks for All Nodes](#kubeadm-tasks-for-all-nodes)

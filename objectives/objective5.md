@@ -1,6 +1,8 @@
-# Objective 5: Troubleshooting (30%)
+# Objective 5: Troubleshooting
 
-- [Objective 5: Troubleshooting (30%)](#objective-5-troubleshooting-30)
+> ⚠ This section is not complete ⚠
+
+- [Objective 5: Troubleshooting](#objective-5-troubleshooting)
   - [Evaluate cluster and node logging](#evaluate-cluster-and-node-logging)
   - [Understand how to monitor applications](#understand-how-to-monitor-applications)
   - [Manage container stdout & stderr logs](#manage-container-stdout--stderr-logs)

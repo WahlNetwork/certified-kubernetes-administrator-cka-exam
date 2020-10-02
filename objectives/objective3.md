@@ -1,6 +1,8 @@
-# Objective 3: Services & Networking (20%)
+# Objective 3: Services & Networking
 
-- [Objective 3: Services & Networking (20%)](#objective-3-services--networking-20)
+> ⚠ This section is not complete ⚠
+
+- [Objective 3: Services & Networking](#objective-3-services--networking)
   - [Understand host networking configuration on the cluster nodes](#understand-host-networking-configuration-on-the-cluster-nodes)
   - [Understand connectivity between Pods](#understand-connectivity-between-pods)
   - [Understand ClusterIP, NodePort, LoadBalancer service types and endpoints](#understand-clusterip-nodeport-loadbalancer-service-types-and-endpoints)
