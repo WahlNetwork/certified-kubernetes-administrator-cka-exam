@@ -15,7 +15,7 @@ data "aws_subnet" "subnet" {
 # Provides an AWS Launch Template for constructing EC2 instances
 resource "aws_launch_template" "cka-node" {
   name                   = local.instance-name
-  image_id               = "ami-07a29e5e945228fa1"
+  image_id               = local.ami-id
   instance_type          = local.instance-type
   key_name               = local.keypair-name
   vpc_security_group_ids = [data.aws_security_group.sg.id]
