@@ -11,6 +11,8 @@
     - [Kubeadm Troubleshooting](#kubeadm-troubleshooting)
     - [Kubeadm Optional Tasks](#kubeadm-optional-tasks)
   - [1.3 Manage a Highly-Available Kubernetes Cluster](#13-manage-a-highly-available-kubernetes-cluster)
+    - [HA Deployment Types](#ha-deployment-types)
+    - [Upgrading from Single Control-Plane to High Availability](#upgrading-from-single-control-plane-to-high-availability)
   - [1.4 Provision Underlying Infrastructure to Deploy a Kubernetes Cluster](#14-provision-underlying-infrastructure-to-deploy-a-kubernetes-cluster)
   - [1.5 Perform a Version Upgrade on a Kubernetes Cluster using Kubeadm](#15-perform-a-version-upgrade-on-a-kubernetes-cluster-using-kubeadm)
     - [First Control Plane Node](#first-control-plane-node)
@@ -24,7 +26,7 @@
 ## 1.1 Manage Role Based Access Control (RBAC)
 
 [cheat sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/#kubectl-apply)
-
+[good resource](https://thenewstack.io/a-practical-approach-to-understanding-kubernetes-authorization/)
 
 Create a namespace
 `kubectl create namespace funtimes1`
@@ -42,9 +44,9 @@ metadata:
   namespace: app1
   name: viewer
 rules:
-- apiGroups: [""]
-  resources: ["pods"]
-  verbs: ["get", "watch", "list"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "watch", "list"]
 ```
 
 ```yaml
@@ -53,9 +55,9 @@ kind: ClusterRole
 metadata:
   name: secret-reader
 rules:
-- apiGroups: [""]
-  resources: ["secrets"]
-  verbs: ["get", "watch", "list"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "watch", "list"]
 ```
 
 ```yaml
@@ -65,9 +67,9 @@ metadata:
   name: read-pods
   namespace: app1
 subjects:
-- kind: User
-  name: jane
-  apiGroup: rbac.authorization.k8s.io
+  - kind: User
+    name: jane
+    apiGroup: rbac.authorization.k8s.io
 roleRef:
   kind: Role
   name: viewer
@@ -80,9 +82,9 @@ kind: ClusterRoleBinding
 metadata:
   name: read-secrets-global
 subjects:
-- kind: Group
-  name: manager
-  apiGroup: rbac.authorization.k8s.io
+  - kind: Group
+    name: manager
+    apiGroup: rbac.authorization.k8s.io
 roleRef:
   kind: ClusterRole
   name: secret-reader
@@ -96,7 +98,6 @@ trying as user
 checking results
 
 `kubectl get role -n app1`
-
 
 ## 1.2 Use Kubeadm to Install a Basic Cluster
 
@@ -178,7 +179,29 @@ sudo apt-mark hold kubelet kubeadm kubectl
 
 ## 1.3 Manage a Highly-Available Kubernetes Cluster
 
+[High Availability Production Environment](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/)
+
+Kubernetes Components for HA:
+
+- Load Balancer / VIP
+- DNS records
+- etcd Endpoint
+- Any HA specific queries / configuration / settings
+
+### HA Deployment Types
+
+With stacked control plane nodes. This approach requires less infrastructure. The etcd members and control plane nodes are co-located.
+With an external etcd cluster. This approach requires more infrastructure. The control plane nodes and etcd members are separated. ([source](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/))
+
+### Upgrading from Single Control-Plane to High Availability
+
+If you have plans to upgrade this single control-plane kubeadm cluster to high availability you should specify the --control-plane-endpoint to set the shared endpoint for all control-plane nodes. Such an endpoint can be either a DNS name or an IP address of a load-balancer. ([source](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/#initializing-your-control-plane-node))
+
 ## 1.4 Provision Underlying Infrastructure to Deploy a Kubernetes Cluster
+
+See Objective [1.2 Use Kubeadm to Install a Basic Cluster](#12-use-kubeadm-to-install-a-basic-cluster).
+
+> Note: Make sure that swap is disabled on all nodes.
 
 ## 1.5 Perform a Version Upgrade on a Kubernetes Cluster using Kubeadm
 
