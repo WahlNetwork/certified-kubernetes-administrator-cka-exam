@@ -191,8 +191,8 @@ Kubernetes Components for HA:
 
 ### HA Deployment Types
 
-With stacked control plane nodes. This approach requires less infrastructure. The etcd members and control plane nodes are co-located.
-With an external etcd cluster. This approach requires more infrastructure. The control plane nodes and etcd members are separated. ([source](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/))
+- With stacked control plane nodes. This approach requires less infrastructure. The etcd members and control plane nodes are co-located.
+- With an external etcd cluster. This approach requires more infrastructure. The control plane nodes and etcd members are separated. ([source](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/))
 
 ### Upgrading from Single Control-Plane to High Availability
 
