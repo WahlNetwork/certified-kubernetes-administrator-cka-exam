@@ -186,6 +186,7 @@ Kubernetes Components for HA:
 - Load Balancer / VIP
 - DNS records
 - etcd Endpoint
+- Certificates
 - Any HA specific queries / configuration / settings
 
 ### HA Deployment Types
