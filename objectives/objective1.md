@@ -23,6 +23,35 @@
 
 ## 1.1 Manage Role Based Access Control (RBAC)
 
+[cheat sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/#kubectl-apply)
+
+kubectl create namespace funtimes1
+
+kubectl create clusterrole
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: app1
+  name: viewer
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "watch", "list"]
+```
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: secret-reader
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "watch", "list"]
+```
+
 ## 1.2 Use Kubeadm to Install a Basic Cluster
 
 Official documentation: [Creating a cluster with kubeadm](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/)
