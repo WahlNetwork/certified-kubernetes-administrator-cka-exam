@@ -25,9 +25,15 @@
 
 [cheat sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/#kubectl-apply)
 
-kubectl create namespace funtimes1
 
-kubectl create clusterrole
+Create a namespace
+`kubectl create namespace funtimes1`
+
+Create a cluster role imperatively
+`kubectl create clusterrole`
+
+Create anything declaratively
+`kubectl apply -f foo.yaml`
 
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -51,6 +57,46 @@ rules:
   resources: ["secrets"]
   verbs: ["get", "watch", "list"]
 ```
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: read-pods
+  namespace: app1
+subjects:
+- kind: User
+  name: jane
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: Role
+  name: viewer
+  apiGroup: rbac.authorization.k8s.io
+```
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: read-secrets-global
+subjects:
+- kind: Group
+  name: manager
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: secret-reader
+  apiGroup: rbac.authorization.k8s.io
+```
+
+trying as user
+
+`kubectl get nodes --as jane`
+
+checking results
+
+`kubectl get role -n app1`
+
 
 ## 1.2 Use Kubeadm to Install a Basic Cluster
 
