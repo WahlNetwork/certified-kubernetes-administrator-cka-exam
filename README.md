@@ -4,9 +4,10 @@
 
 **👋 Welcome! 👋**
 
-This repository contains a study guide created in preparation for passing the Certified Kubernetes Administrator (CKA) exam. It is a work in progress with regular updates being made via my [Twitch](https://www.twitch.tv/wahlnetwork) live streams. Each objective is broken down into helpful links, commands, videos, scripts, code samples, and more so that you can refer back to this guide during your studies.
+This repository contains a study guide created in preparation for passing the Certified Kubernetes Administrator (CKA) exam. It is a work in progress with regular updates being made via my [Twitch](https://www.twitch.tv/wahlnetwork) live streams. Each objective is broken down into helpful links, commands, videos, scripts, code samples, and more so that you can refer back to this guide during your studies. Task tracking is contained on [this Trello board](https://bit.ly/2SzlFRr).
 
-The `main` branch contains all of the finished work, while the `draft` branch contains work-in-progress that needs to be polished, verified, and formatted.
+- The `main` branch contains all of the finished work
+- The `draft` branch contains work-in-progress that needs to be polished, verified, and formatted
 
 I've made a brief announcement video that you can watch below:
 
