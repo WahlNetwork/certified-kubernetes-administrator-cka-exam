@@ -3,15 +3,15 @@
 > ⚠ This section is not complete ⚠
 
 - [Objective 4: Storage](#objective-4-storage)
-  - [Understand storage classes, persistent volumes](#understand-storage-classes-persistent-volumes)
-  - [Understand volume mode, access modes and reclaim policies for volumes](#understand-volume-mode-access-modes-and-reclaim-policies-for-volumes)
-  - [Understand persistent volume claims primitive](#understand-persistent-volume-claims-primitive)
-  - [Know how to configure applications with persistent storage](#know-how-to-configure-applications-with-persistent-storage)
+  - [Understand Storage Classes, Persistent Volumes](#understand-storage-classes-persistent-volumes)
+  - [Understand Volume Mode, Access Modes And Reclaim Policies For Volumes](#understand-volume-mode-access-modes-and-reclaim-policies-for-volumes)
+  - [Understand Persistent Volume Claims Primitive](#understand-persistent-volume-claims-primitive)
+  - [Know How To Configure Applications With Persistent Storage](#know-how-to-configure-applications-with-persistent-storage)
 
-## Understand storage classes, persistent volumes
+## Understand Storage Classes, Persistent Volumes
 
-## Understand volume mode, access modes and reclaim policies for volumes
+## Understand Volume Mode, Access Modes And Reclaim Policies For Volumes
 
-## Understand persistent volume claims primitive
+## Understand Persistent Volume Claims Primitive
 
-## Know how to configure applications with persistent storage
+## Know How To Configure Applications With Persistent Storage

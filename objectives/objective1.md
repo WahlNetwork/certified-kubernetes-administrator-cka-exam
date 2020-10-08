@@ -3,7 +3,7 @@
 > ⚠ This section is not complete ⚠
 
 - [Objective 1: Cluster Architecture, Installation & Configuration](#objective-1-cluster-architecture-installation--configuration)
-  - [1.1 Manage Role Based Access Control (RBAC)](#11-manage-role-based-access-control-rbac)
+  - [1.1 Manage Role Based Access Control (Rbac)](#11-manage-role-based-access-control-rbac)
     - [Lab Environment](#lab-environment)
     - [Lab Practice](#lab-practice)
   - [1.2 Use Kubeadm to Install a Basic Cluster](#12-use-kubeadm-to-install-a-basic-cluster)
@@ -12,20 +12,20 @@
     - [Kubeadm Tasks for Worker Node(s)](#kubeadm-tasks-for-worker-nodes)
     - [Kubeadm Troubleshooting](#kubeadm-troubleshooting)
     - [Kubeadm Optional Tasks](#kubeadm-optional-tasks)
-  - [1.3 Manage a Highly-Available Kubernetes Cluster](#13-manage-a-highly-available-kubernetes-cluster)
+  - [1.3 Manage A Highly-Available Kubernetes Cluster](#13-manage-a-highly-available-kubernetes-cluster)
     - [HA Deployment Types](#ha-deployment-types)
     - [Upgrading from Single Control-Plane to High Availability](#upgrading-from-single-control-plane-to-high-availability)
   - [1.4 Provision Underlying Infrastructure to Deploy a Kubernetes Cluster](#14-provision-underlying-infrastructure-to-deploy-a-kubernetes-cluster)
   - [1.5 Perform a Version Upgrade on a Kubernetes Cluster using Kubeadm](#15-perform-a-version-upgrade-on-a-kubernetes-cluster-using-kubeadm)
     - [First Control Plane Node](#first-control-plane-node)
     - [Additional Control Plane Nodes](#additional-control-plane-nodes)
-    - [Upgrade Control Plane Node kubectl and kubelet tools](#upgrade-control-plane-node-kubectl-and-kubelet-tools)
+    - [Upgrade Control Plane Node Kubectl And Kubelet Tools](#upgrade-control-plane-node-kubectl-and-kubelet-tools)
     - [Upgrade Worker Nodes](#upgrade-worker-nodes)
-  - [1.6 Implement etcd Backup and Restore](#16-implement-etcd-backup-and-restore)
-    - [Snapshot the keyspace](#snapshot-the-keyspace)
-    - [Restore from snapshot](#restore-from-snapshot)
+  - [1.6 Implement Etcd Backup And Restore](#16-implement-etcd-backup-and-restore)
+    - [Snapshot The Keyspace](#snapshot-the-keyspace)
+    - [Restore From Snapshot](#restore-from-snapshot)
 
-## 1.1 Manage Role Based Access Control (RBAC)
+## 1.1 Manage Role Based Access Control (Rbac)
 
 Documentation and Resources:
 
@@ -235,7 +235,7 @@ Alternatively, use the [Flannel CNI](https://coreos.com/flannel/docs/latest/kube
 - Single node cluster? [Taint the control node](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/) to accept pods without dedicated worker nodes.
 - Deploy the "hello-node" app from the [minikube tutorial](https://kubernetes.io/docs/tutorials/hello-minikube/) to test basic functionality.
 
-## 1.3 Manage a Highly-Available Kubernetes Cluster
+## 1.3 Manage A Highly-Available Kubernetes Cluster
 
 [High Availability Production Environment](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/)
 
@@ -320,7 +320,7 @@ Repeat the first control plane node steps while replacing the "upgrade the clust
 
 `sudo kubeadm upgrade node`
 
-### Upgrade Control Plane Node kubectl and kubelet tools
+### Upgrade Control Plane Node Kubectl And Kubelet Tools
 
 Upgrade the kubelet and kubectl on all control plane nodes
 
@@ -377,13 +377,13 @@ Uncordon the node
 
 `kubectl uncordon $NODENAME`
 
-## 1.6 Implement etcd Backup and Restore
+## 1.6 Implement Etcd Backup And Restore
 
 - [Operating etcd clusters for Kubernetes: Backing up an etcd cluster](https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/#backing-up-an-etcd-cluster)
 - [Etcd Documentation: Disaster Recovery](https://etcd.io/docs/v3.4.0/op-guide/recovery/)
 - [Kubernetes Tips: Backup and Restore Etcd](https://medium.com/better-programming/kubernetes-tips-backup-and-restore-etcd-97fe12e56c57)
 
-### Snapshot the keyspace
+### Snapshot The Keyspace
 
 Use `etcdctl snapshot save`.
 
@@ -391,7 +391,7 @@ Snapshot the keyspace served by \$ENDPOINT to the file snapshot.db:
 
 `ETCDCTL_API=3 etcdctl --endpoints $ENDPOINT snapshot save snapshot.db`
 
-### Restore from snapshot
+### Restore From Snapshot
 
 Use `etcdctl snapshot restore`.
 
