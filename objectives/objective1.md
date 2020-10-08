@@ -4,6 +4,8 @@
 
 - [Objective 1: Cluster Architecture, Installation & Configuration](#objective-1-cluster-architecture-installation--configuration)
   - [1.1 Manage Role Based Access Control (RBAC)](#11-manage-role-based-access-control-rbac)
+    - [Lab Environment](#lab-environment)
+    - [Lab Practice](#lab-practice)
   - [1.2 Use Kubeadm to Install a Basic Cluster](#12-use-kubeadm-to-install-a-basic-cluster)
     - [Kubeadm Tasks for All Nodes](#kubeadm-tasks-for-all-nodes)
     - [Kubeadm Tasks for Single Control Node](#kubeadm-tasks-for-single-control-node)
@@ -25,79 +27,116 @@
 
 ## 1.1 Manage Role Based Access Control (RBAC)
 
-[cheat sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/#kubectl-apply)
-[good resource](https://thenewstack.io/a-practical-approach-to-understanding-kubernetes-authorization/)
+Documentation and Resources:
 
-Create a namespace
-`kubectl create namespace funtimes1`
+- [Kubectl Cheat Sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
+- [Using RBAC Authorization](https://kubernetes.io/docs/reference/access-authn-authz/rbac/)
+- [A Practical Approach to Understanding Kubernetes Authorization](https://thenewstack.io/a-practical-approach-to-understanding-kubernetes-authorization/)
 
-Create a cluster role imperatively
-`kubectl create clusterrole`
+RBAC is handled by roles (permissions) and bindings (assignment of permissions to subjects):
 
-Create anything declaratively
-`kubectl apply -f foo.yaml`
+|Object|Description|
+|-|-|
+|`Role`|Permissions within a particular namespace|
+|`ClusterRole`|Permissions to non-namespaced resources; can be used to grant the same permissions as a Role|
+|`RoleBinding`|Grants the permissions defined in a role to a user or set of users|
+|`ClusterRoleBinding`|Grant permissions across a whole cluster|
+
+### Lab Environment
+
+If desired, use a managed Kubernetes cluster, such as Amazon EKS, to immediately begin working with RBAC. The command `aws --region REGION eks update-kubeconfig --name CLUSTERNAME` will generate a .kube configuration file on your workstation to permit kubectl commands.
+
+### Lab Practice
+
+Create the `wahlnetwork1` namespace.
+
+`kubectl create namespace wahlnetwork1`
+
+---
+
+Create a deployment in the `wahlnetwork1` namespace.
+
+`kubectl create deployment hello-node --image=k8s.gcr.io/echoserver:1.4 -n wahlnetwork1`
+
+kubectl create deployment busybox --image=busybox -n wahlnetwork1 -- sleep 2000
+
+> `kubectl create deployment hello-node --image=k8s.gcr.io/echoserver:1.4 -n wahlnetwork1 --dry-run=client -o yaml`
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: hello-node
+  name: hello-node
+  namespace: wahlnetwork1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-node
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: hello-node
+    spec:
+      containers:
+      - image: k8s.gcr.io/echoserver:1.4
+        name: echoserver
+        resources: {}
+status: {}
+```
+
+---
+
+Create the `pod-reader` role in the `wahlnetwork1` namespace.
+
+`kubectl create role pod-reader --verb=get --verb=list --verb=watch --resource=pods -n wahlnetwork1`
+
+> Alternatively, use `kubectl create role pod-reader --verb=get --verb=list --verb=watch --resource=pods -n wahlnetwork1 --dry-run=client -o yaml` to output a proper yaml configuration.
 
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  namespace: app1
-  name: viewer
+  creationTimestamp: null
+  name: pod-reader
+  namespace: wahlnetwork1
 rules:
-  - apiGroups: [""]
-    resources: ["pods"]
-    verbs: ["get", "watch", "list"]
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+  - list
+  - watch
 ```
 
-```yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: secret-reader
-rules:
-  - apiGroups: [""]
-    resources: ["secrets"]
-    verbs: ["get", "watch", "list"]
-```
+---
+
+Create the `read-pods` rolebinding in the `wahlnetwork1` namespace.
+
+`kubectl create rolebinding --role=pod-reader --user=spongebob read-pods --dry-run=client -o yaml`
 
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
+  creationTimestamp: null
   name: read-pods
-  namespace: app1
-subjects:
-  - kind: User
-    name: jane
-    apiGroup: rbac.authorization.k8s.io
 roleRef:
+  apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: viewer
-  apiGroup: rbac.authorization.k8s.io
-```
-
-```yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: read-secrets-global
+  name: pod-reader
 subjects:
-  - kind: Group
-    name: manager
-    apiGroup: rbac.authorization.k8s.io
-roleRef:
-  kind: ClusterRole
-  name: secret-reader
-  apiGroup: rbac.authorization.k8s.io
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: spongebob
 ```
-
-trying as user
-
-`kubectl get nodes --as jane`
-
-checking results
-
-`kubectl get role -n app1`
 
 ## 1.2 Use Kubeadm to Install a Basic Cluster
 
@@ -149,6 +188,20 @@ sudo apt-get install -y kubelet kubeadm kubectl
 sudo apt-mark hold kubelet kubeadm kubectl
 ```
 
+Optionally, add `sudo kubeadm config images pull` to the end of the script to pre-pull images required for setting up a Kubernetes cluster.
+
+```bash
+$ sudo kubeadm config images pull
+
+[config/images] Pulled k8s.gcr.io/kube-apiserver:v1.19.2
+[config/images] Pulled k8s.gcr.io/kube-controller-manager:v1.19.2
+[config/images] Pulled k8s.gcr.io/kube-scheduler:v1.19.2
+[config/images] Pulled k8s.gcr.io/kube-proxy:v1.19.2
+[config/images] Pulled k8s.gcr.io/pause:3.2
+[config/images] Pulled k8s.gcr.io/etcd:3.4.13-0
+[config/images] Pulled k8s.gcr.io/coredns:1.7.0
+```
+
 ### Kubeadm Tasks for Single Control Node
 
 - Initialize the cluster
@@ -159,6 +212,11 @@ sudo apt-mark hold kubelet kubeadm kubectl
 - [Install Calico](https://docs.projectcalico.org/getting-started/kubernetes/quickstart)
 - [Configure local kubectl access](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/#optional-controlling-your-cluster-from-machines-other-than-the-control-plane-node)
   - This step simply copies the `admin.conf` file into a location accessible for a regular user.
+
+Alternatively, use the [Flannel CNI](https://coreos.com/flannel/docs/latest/kubernetes.html).
+
+- Run `sudo kubeadm init --pod-network-cidr=10.244.0.0/16` to initialize the cluster and provide a pod network aligned to [Flannel's default configuration](https://github.com/coreos/flannel/blob/master/Documentation/kubernetes.md).
+  - Note: The [`kube-flannel.yml`](https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml) file is hosted in the same location.
 
 ### Kubeadm Tasks for Worker Node(s)
 
