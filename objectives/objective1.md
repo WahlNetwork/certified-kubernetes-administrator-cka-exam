@@ -1,18 +1,20 @@
 # Objective 1: Cluster Architecture, Installation & Configuration
 
-> ⚠ This section is not complete ⚠
-
 - [Objective 1: Cluster Architecture, Installation & Configuration](#objective-1-cluster-architecture-installation--configuration)
-  - [1.1 Manage Role Based Access Control (Rbac)](#11-manage-role-based-access-control-rbac)
-  - [1.2 Use Kubeadm To Install A Basic Cluster](#12-use-kubeadm-to-install-a-basic-cluster)
+  - [1.1 Manage Role Based Access Control (RBAC)](#11-manage-role-based-access-control-rbac)
+    - [Lab Environment](#lab-environment)
+    - [Lab Practice](#lab-practice)
+  - [1.2 Use Kubeadm to Install a Basic Cluster](#12-use-kubeadm-to-install-a-basic-cluster)
     - [Kubeadm Tasks for All Nodes](#kubeadm-tasks-for-all-nodes)
     - [Kubeadm Tasks for Single Control Node](#kubeadm-tasks-for-single-control-node)
     - [Kubeadm Tasks for Worker Node(s)](#kubeadm-tasks-for-worker-nodes)
     - [Kubeadm Troubleshooting](#kubeadm-troubleshooting)
     - [Kubeadm Optional Tasks](#kubeadm-optional-tasks)
   - [1.3 Manage A Highly-Available Kubernetes Cluster](#13-manage-a-highly-available-kubernetes-cluster)
-  - [1.4 Provision Underlying Infrastructure To Deploy A Kubernetes Cluster](#14-provision-underlying-infrastructure-to-deploy-a-kubernetes-cluster)
-  - [1.5 Perform A Version Upgrade On A Kubernetes Cluster Using Kubeadm](#15-perform-a-version-upgrade-on-a-kubernetes-cluster-using-kubeadm)
+    - [HA Deployment Types](#ha-deployment-types)
+    - [Upgrading from Single Control-Plane to High Availability](#upgrading-from-single-control-plane-to-high-availability)
+  - [1.4 Provision Underlying Infrastructure to Deploy a Kubernetes Cluster](#14-provision-underlying-infrastructure-to-deploy-a-kubernetes-cluster)
+  - [1.5 Perform a Version Upgrade on a Kubernetes Cluster using Kubeadm](#15-perform-a-version-upgrade-on-a-kubernetes-cluster-using-kubeadm)
     - [First Control Plane Node](#first-control-plane-node)
     - [Additional Control Plane Nodes](#additional-control-plane-nodes)
     - [Upgrade Control Plane Node Kubectl And Kubelet Tools](#upgrade-control-plane-node-kubectl-and-kubelet-tools)
@@ -21,9 +23,169 @@
     - [Snapshot The Keyspace](#snapshot-the-keyspace)
     - [Restore From Snapshot](#restore-from-snapshot)
 
-## 1.1 Manage Role Based Access Control (Rbac)
+## 1.1 Manage Role Based Access Control (RBAC)
 
-## 1.2 Use Kubeadm To Install A Basic Cluster
+Documentation and Resources:
+
+- [Kubectl Cheat Sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
+- [Using RBAC Authorization](https://kubernetes.io/docs/reference/access-authn-authz/rbac/)
+- [A Practical Approach to Understanding Kubernetes Authorization](https://thenewstack.io/a-practical-approach-to-understanding-kubernetes-authorization/)
+
+RBAC is handled by roles (permissions) and bindings (assignment of permissions to subjects):
+
+| Object               | Description                                                                                  |
+| -------------------- | -------------------------------------------------------------------------------------------- |
+| `Role`               | Permissions within a particular namespace                                                    |
+| `ClusterRole`        | Permissions to non-namespaced resources; can be used to grant the same permissions as a Role |
+| `RoleBinding`        | Grants the permissions defined in a role to a user or set of users                           |
+| `ClusterRoleBinding` | Grant permissions across a whole cluster                                                     |
+
+### Lab Environment
+
+If desired, use a managed Kubernetes cluster, such as Amazon EKS, to immediately begin working with RBAC. The command `aws --region REGION eks update-kubeconfig --name CLUSTERNAME` will generate a .kube configuration file on your workstation to permit kubectl commands.
+
+### Lab Practice
+
+Create the `wahlnetwork1` namespace.
+
+`kubectl create namespace wahlnetwork1`
+
+---
+
+Create a deployment in the `wahlnetwork1` namespace using the image of your choice:
+
+1. `kubectl create deployment hello-node --image=k8s.gcr.io/echoserver:1.4 -n wahlnetwork1`
+1. `kubectl create deployment busybox --image=busybox -n wahlnetwork1 -- sleep 2000`
+
+You can view the yaml file by adding `--dry-run=client -o yaml` to the end of either deployment.
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: hello-node
+  name: hello-node
+  namespace: wahlnetwork1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello-node
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: hello-node
+    spec:
+      containers:
+        - image: k8s.gcr.io/echoserver:1.4
+          name: echoserver
+          resources: {}
+```
+
+---
+
+Create the `pod-reader` role in the `wahlnetwork1` namespace.
+
+`kubectl create role pod-reader --verb=get --verb=list --verb=watch --resource=pods -n wahlnetwork1`
+
+> Alternatively, use `kubectl create role pod-reader --verb=get --verb=list --verb=watch --resource=pods -n wahlnetwork1 --dry-run=client -o yaml` to output a proper yaml configuration.
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  creationTimestamp: null
+  name: pod-reader
+  namespace: wahlnetwork1
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - get
+      - list
+      - watch
+```
+
+---
+
+Create the `read-pods` rolebinding between the role named `pod-reader` and the user `spongebob` in the `wahlnetwork1` namespace.
+
+`kubectl create rolebinding --role=pod-reader --user=spongebob read-pods`
+
+> Alternatively, use `kubectl create rolebinding --role=pod-reader --user=spongebob read-pods --dry-run=client -o yaml` to output a proper yaml configuration.
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  creationTimestamp: null
+  name: read-pods
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: pod-reader
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: User
+    name: spongebob
+```
+
+---
+
+Create the `cluster-pod-reader` clusterrole.
+
+`kubectl create clusterrole cluster-pod-reader --verb=get --verb=list --verb=watch --resource=pods`
+
+> Alternatively, use `kubectl create clusterrole cluster-pod-reader --verb=get --verb=list --verb=watch --resource=pods --dry-run=client -o yaml` to output a proper yaml configuration.
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: cluster-pod-reader
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - get
+      - list
+      - watch
+```
+
+---
+
+Create the `cluster-read-pods` clusterrolebinding between the clusterrole named `cluster-pod-reader` and the user `gizmo`.
+
+`kubectl create clusterrolebinding --clusterrole=cluster-pod-reader --user=gizmo cluster-read-pods`
+
+> Alternatively, use `kubectl create clusterrolebinding --clusterrole=cluster-pod-reader --user=gizmo cluster-read-pods --dry-run=client -o yaml` to output a proper yaml configuration.
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  creationTimestamp: null
+  name: cluster-read-pods
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-pod-reader
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: User
+    name: gizmo
+```
+
+## 1.2 Use Kubeadm to Install a Basic Cluster
 
 Official documentation: [Creating a cluster with kubeadm](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/)
 
@@ -73,6 +235,20 @@ sudo apt-get install -y kubelet kubeadm kubectl
 sudo apt-mark hold kubelet kubeadm kubectl
 ```
 
+Optionally, add `sudo kubeadm config images pull` to the end of the script to pre-pull images required for setting up a Kubernetes cluster.
+
+```bash
+$ sudo kubeadm config images pull
+
+[config/images] Pulled k8s.gcr.io/kube-apiserver:v1.19.2
+[config/images] Pulled k8s.gcr.io/kube-controller-manager:v1.19.2
+[config/images] Pulled k8s.gcr.io/kube-scheduler:v1.19.2
+[config/images] Pulled k8s.gcr.io/kube-proxy:v1.19.2
+[config/images] Pulled k8s.gcr.io/pause:3.2
+[config/images] Pulled k8s.gcr.io/etcd:3.4.13-0
+[config/images] Pulled k8s.gcr.io/coredns:1.7.0
+```
+
 ### Kubeadm Tasks for Single Control Node
 
 - Initialize the cluster
@@ -83,6 +259,11 @@ sudo apt-mark hold kubelet kubeadm kubectl
 - [Install Calico](https://docs.projectcalico.org/getting-started/kubernetes/quickstart)
 - [Configure local kubectl access](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/#optional-controlling-your-cluster-from-machines-other-than-the-control-plane-node)
   - This step simply copies the `admin.conf` file into a location accessible for a regular user.
+
+Alternatively, use the [Flannel CNI](https://coreos.com/flannel/docs/latest/kubernetes.html).
+
+- Run `sudo kubeadm init --pod-network-cidr=10.244.0.0/16` to initialize the cluster and provide a pod network aligned to [Flannel's default configuration](https://github.com/coreos/flannel/blob/master/Documentation/kubernetes.md).
+  - Note: The [`kube-flannel.yml`](https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml) file is hosted in the same location.
 
 ### Kubeadm Tasks for Worker Node(s)
 
@@ -103,9 +284,32 @@ sudo apt-mark hold kubelet kubeadm kubectl
 
 ## 1.3 Manage A Highly-Available Kubernetes Cluster
 
-## 1.4 Provision Underlying Infrastructure To Deploy A Kubernetes Cluster
+[High Availability Production Environment](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/)
 
-## 1.5 Perform A Version Upgrade On A Kubernetes Cluster Using Kubeadm
+Kubernetes Components for HA:
+
+- Load Balancer / VIP
+- DNS records
+- etcd Endpoint
+- Certificates
+- Any HA specific queries / configuration / settings
+
+### HA Deployment Types
+
+- With stacked control plane nodes. This approach requires less infrastructure. The etcd members and control plane nodes are co-located.
+- With an external etcd cluster. This approach requires more infrastructure. The control plane nodes and etcd members are separated. ([source](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/))
+
+### Upgrading from Single Control-Plane to High Availability
+
+If you have plans to upgrade this single control-plane kubeadm cluster to high availability you should specify the --control-plane-endpoint to set the shared endpoint for all control-plane nodes. Such an endpoint can be either a DNS name or an IP address of a load-balancer. ([source](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/#initializing-your-control-plane-node))
+
+## 1.4 Provision Underlying Infrastructure to Deploy a Kubernetes Cluster
+
+See Objective [1.2 Use Kubeadm to Install a Basic Cluster](#12-use-kubeadm-to-install-a-basic-cluster).
+
+> Note: Make sure that swap is disabled on all nodes.
+
+## 1.5 Perform a Version Upgrade on a Kubernetes Cluster using Kubeadm
 
 - [Upgrading kubeadm clusters](https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade/)
 - [Safely Drain a Node while Respecting the PodDisruptionBudget](https://kubernetes.io/docs/tasks/administer-cluster/safely-drain-node/)

@@ -23,6 +23,7 @@ I've made a brief announcement video that you can watch below:
   - [Resources](#resources)
     - [Official References](#official-references)
     - [Online Training](#online-training)
+    - [Tools](#tools)
     - [Community](#community)
   - [The Fine Print](#the-fine-print)
     - [Disclaimer](#disclaimer)
@@ -55,6 +56,10 @@ Fantastic resources from around the world.
 
 - [Pluralsight CKA Learning Path](https://app.pluralsight.com/paths/certificate/certified-kubernetes-administrator) by author [Anthony Nocentino](https://app.pluralsight.com/profile/author/anthony-nocentino)
 - [A Cloud Guru's Cloud Native Certified Kubernetes Administrator (CKA) Course](https://acloud.guru/learn/7f5137aa-2d26-4b19-8d8c-025b22667e76)
+
+### Tools
+
+- [Kubectl-fzf Autocomplete](https://github.com/bonnefoa/kubectl-fzf)
 
 ### Community
 
