@@ -118,9 +118,11 @@ rules:
 
 ---
 
-Create the `read-pods` rolebinding in the `wahlnetwork1` namespace.
+Create the `read-pods` rolebinding between the role named `pod-reader` and the user `spongebob` in the `wahlnetwork1` namespace.
 
-`kubectl create rolebinding --role=pod-reader --user=spongebob read-pods --dry-run=client -o yaml`
+`kubectl create rolebinding --role=pod-reader --user=spongebob read-pods`
+
+> Alternatively, use `kubectl create rolebinding --role=pod-reader --user=spongebob read-pods --dry-run=client -o yaml` to output a proper yaml configuration.
 
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -136,6 +138,55 @@ subjects:
 - apiGroup: rbac.authorization.k8s.io
   kind: User
   name: spongebob
+```
+
+---
+
+Create the `cluster-pod-reader` clusterrole.
+
+`kubectl create clusterrole cluster-pod-reader --verb=get --verb=list --verb=watch --resource=pods`
+
+> Alternatively, use `kubectl create clusterrole cluster-pod-reader --verb=get --verb=list --verb=watch --resource=pods --dry-run=client -o yaml` to output a proper yaml configuration.
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: cluster-pod-reader
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - get
+  - list
+  - watch
+```
+
+---
+
+Create the `cluster-read-pods` rolebinding between the clusterrole named `cluster-pod-reader` and the user `gizmo`.
+
+`kubectl create clusterrolebinding --clusterrole=cluster-pod-reader --user=gizmo cluster-read-pods`
+
+> Alternatively, use `kubectl create clusterrolebinding --clusterrole=cluster-pod-reader --user=gizmo cluster-read-pods --dry-run=client -o yaml` to output a proper yaml configuration.
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  creationTimestamp: null
+  name: cluster-read-pods
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-pod-reader
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: gizmo
 ```
 
 ## 1.2 Use Kubeadm to Install a Basic Cluster
