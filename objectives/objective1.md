@@ -1,9 +1,7 @@
 # Objective 1: Cluster Architecture, Installation & Configuration
 
-> ⚠ This section is not complete ⚠
-
 - [Objective 1: Cluster Architecture, Installation & Configuration](#objective-1-cluster-architecture-installation--configuration)
-  - [1.1 Manage Role Based Access Control (Rbac)](#11-manage-role-based-access-control-rbac)
+  - [1.1 Manage Role Based Access Control (RBAC)](#11-manage-role-based-access-control-rbac)
     - [Lab Environment](#lab-environment)
     - [Lab Practice](#lab-practice)
   - [1.2 Use Kubeadm to Install a Basic Cluster](#12-use-kubeadm-to-install-a-basic-cluster)
@@ -25,7 +23,7 @@
     - [Snapshot The Keyspace](#snapshot-the-keyspace)
     - [Restore From Snapshot](#restore-from-snapshot)
 
-## 1.1 Manage Role Based Access Control (Rbac)
+## 1.1 Manage Role Based Access Control (RBAC)
 
 Documentation and Resources:
 
@@ -35,12 +33,12 @@ Documentation and Resources:
 
 RBAC is handled by roles (permissions) and bindings (assignment of permissions to subjects):
 
-|Object|Description|
-|-|-|
-|`Role`|Permissions within a particular namespace|
-|`ClusterRole`|Permissions to non-namespaced resources; can be used to grant the same permissions as a Role|
-|`RoleBinding`|Grants the permissions defined in a role to a user or set of users|
-|`ClusterRoleBinding`|Grant permissions across a whole cluster|
+| Object               | Description                                                                                  |
+| -------------------- | -------------------------------------------------------------------------------------------- |
+| `Role`               | Permissions within a particular namespace                                                    |
+| `ClusterRole`        | Permissions to non-namespaced resources; can be used to grant the same permissions as a Role |
+| `RoleBinding`        | Grants the permissions defined in a role to a user or set of users                           |
+| `ClusterRoleBinding` | Grant permissions across a whole cluster                                                     |
 
 ### Lab Environment
 
@@ -54,13 +52,12 @@ Create the `wahlnetwork1` namespace.
 
 ---
 
-Create a deployment in the `wahlnetwork1` namespace.
+Create a deployment in the `wahlnetwork1` namespace using the image of your choice:
 
-`kubectl create deployment hello-node --image=k8s.gcr.io/echoserver:1.4 -n wahlnetwork1`
+1. `kubectl create deployment hello-node --image=k8s.gcr.io/echoserver:1.4 -n wahlnetwork1`
+1. `kubectl create deployment busybox --image=busybox -n wahlnetwork1 -- sleep 2000`
 
-kubectl create deployment busybox --image=busybox -n wahlnetwork1 -- sleep 2000
-
-> `kubectl create deployment hello-node --image=k8s.gcr.io/echoserver:1.4 -n wahlnetwork1 --dry-run=client -o yaml`
+You can view the yaml file by adding `--dry-run=client -o yaml` to the end of either deployment.
 
 ```yaml
 apiVersion: apps/v1
@@ -84,10 +81,9 @@ spec:
         app: hello-node
     spec:
       containers:
-      - image: k8s.gcr.io/echoserver:1.4
-        name: echoserver
-        resources: {}
-status: {}
+        - image: k8s.gcr.io/echoserver:1.4
+          name: echoserver
+          resources: {}
 ```
 
 ---
@@ -106,14 +102,14 @@ metadata:
   name: pod-reader
   namespace: wahlnetwork1
 rules:
-- apiGroups:
-  - ""
-  resources:
-  - pods
-  verbs:
-  - get
-  - list
-  - watch
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - get
+      - list
+      - watch
 ```
 
 ---
@@ -135,9 +131,9 @@ roleRef:
   kind: Role
   name: pod-reader
 subjects:
-- apiGroup: rbac.authorization.k8s.io
-  kind: User
-  name: spongebob
+  - apiGroup: rbac.authorization.k8s.io
+    kind: User
+    name: spongebob
 ```
 
 ---
@@ -155,19 +151,19 @@ metadata:
   creationTimestamp: null
   name: cluster-pod-reader
 rules:
-- apiGroups:
-  - ""
-  resources:
-  - pods
-  verbs:
-  - get
-  - list
-  - watch
+  - apiGroups:
+      - ""
+    resources:
+      - pods
+    verbs:
+      - get
+      - list
+      - watch
 ```
 
 ---
 
-Create the `cluster-read-pods` rolebinding between the clusterrole named `cluster-pod-reader` and the user `gizmo`.
+Create the `cluster-read-pods` clusterrolebinding between the clusterrole named `cluster-pod-reader` and the user `gizmo`.
 
 `kubectl create clusterrolebinding --clusterrole=cluster-pod-reader --user=gizmo cluster-read-pods`
 
@@ -184,9 +180,9 @@ roleRef:
   kind: ClusterRole
   name: cluster-pod-reader
 subjects:
-- apiGroup: rbac.authorization.k8s.io
-  kind: User
-  name: gizmo
+  - apiGroup: rbac.authorization.k8s.io
+    kind: User
+    name: gizmo
 ```
 
 ## 1.2 Use Kubeadm to Install a Basic Cluster
