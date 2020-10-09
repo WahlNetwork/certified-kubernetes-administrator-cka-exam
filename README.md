@@ -21,10 +21,10 @@ I've made a brief announcement video that you can watch below:
   - [Table of Contents](#table-of-contents)
   - [Exam Objectives](#exam-objectives)
   - [Resources](#resources)
-    - [Official References](#official-references)
-    - [Online Training](#online-training)
-    - [Tools](#tools)
-    - [Community](#community)
+    - [📝 Official References](#-official-references)
+    - [🎓 Online Training](#-online-training)
+    - [🛠 Tools](#-tools)
+    - [🤗 Community](#-community)
   - [The Fine Print](#the-fine-print)
     - [Disclaimer](#disclaimer)
     - [Contributing](#contributing)
@@ -35,37 +35,41 @@ I've made a brief announcement video that you can watch below:
 
 The CNCF curriculum is posted [here](https://github.com/cncf/curriculum). The percentage after each objective is the relative score weight on the exam.
 
-- [Objective 1: Cluster Architecture, Installation & Configuration](objectives/objective1.md)
-- [Objective 2: Workloads & Scheduling](objectives/objective2.md)
-- [Objective 3: Services & Networking](objectives/objective3.md)
-- [Objective 4: Storage](objectives/objective4.md)
-- [Objective 5: Troubleshooting](objectives/objective5.md)
+- [Objective 1: Cluster Architecture, Installation & Configuration](objectives/objective1.md) ✔
+- [Objective 2: Workloads & Scheduling](objectives/objective2.md) ⚠ WIP
+- [Objective 3: Services & Networking](objectives/objective3.md) ⚠ WIP
+- [Objective 4: Storage](objectives/objective4.md) ⚠ WIP
+- [Objective 5: Troubleshooting](objectives/objective5.md) ⚠ WIP
 
 ## Resources
 
 Fantastic resources from around the world.
 
-### Official References
+### 📝 Official References
 
 - [Certified Kubernetes Administrator (CKA) Exam 1.19 Curriculum](https://github.com/cncf/curriculum/blob/master/CKA_Curriculum_v1.19.pdf)
 - [Linux Foundation's Important Instructions: CKA and CKAD](https://docs.linuxfoundation.org/tc-docs/certification/tips-cka-and-ckad)
-- [kubectl Cheat Sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/) 📝
-- [kubectl Reference Docs](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands) 📝
+- [Enable kubectl autocompletion](https://kubernetes.io/docs/tasks/tools/install-kubectl/#enable-kubectl-autocompletion)
+- [kubectl Cheat Sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
+- [kubectl Reference Docs](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands)
 
-### Online Training
+### 🎓 Online Training
 
 - [Pluralsight CKA Learning Path](https://app.pluralsight.com/paths/certificate/certified-kubernetes-administrator) by author [Anthony Nocentino](https://app.pluralsight.com/profile/author/anthony-nocentino)
 - [A Cloud Guru's Cloud Native Certified Kubernetes Administrator (CKA) Course](https://acloud.guru/learn/7f5137aa-2d26-4b19-8d8c-025b22667e76)
 
-### Tools
+### 🛠 Tools
 
 - [Kubectl-fzf Autocomplete](https://github.com/bonnefoa/kubectl-fzf)
+- [Power tools for kubectl](https://github.com/ahmetb/kubectx)
 
-### Community
+### 🤗 Community
 
 - [How I passed the CKA (Certified Kubernetes Administrator) Exam](https://medium.com/platformer-blog/how-i-passed-the-cka-certified-kubernetes-administrator-exam-8943aa24d71d)
+- [Best Practices for CKA Exam](https://medium.com/@emreodabas_20110/best-practices-for-cka-exam-9c1e51ea9b29)
 - [Practice Enough With These 150 Questions for the CKAD Exam](https://medium.com/bb-tutorials-and-thoughts/practice-enough-with-these-questions-for-the-ckad-exam-2f42d1228552)
 - [walidshaari's Kubernetes-Certified-Administrator Repo](https://github.com/walidshaari/Kubernetes-Certified-Administrator)
+- [Interesting Kubernetes application demos](https://www.virtuallyghetto.com/2020/06/interesting-kubernetes-application-demos.html)
 
 ## The Fine Print
 
