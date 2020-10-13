@@ -116,9 +116,9 @@ rules:
 
 Create the `read-pods` rolebinding between the role named `pod-reader` and the user `spongebob` in the `wahlnetwork1` namespace.
 
-`kubectl create rolebinding --role=pod-reader --user=spongebob read-pods`
+`kubectl create rolebinding --role=pod-reader --user=spongebob read-pods -n wahlnetwork1`
 
-> Alternatively, use `kubectl create rolebinding --role=pod-reader --user=spongebob read-pods --dry-run=client -o yaml` to output a proper yaml configuration.
+> Alternatively, use `kubectl create rolebinding --role=pod-reader --user=spongebob read-pods -n wahlnetwork1 --dry-run=client -o yaml` to output a proper yaml configuration.
 
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
