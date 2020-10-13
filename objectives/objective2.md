@@ -7,6 +7,7 @@
     - [Perform Rolling Update](#perform-rolling-update)
     - [Perform Rollbacks](#perform-rollbacks)
   - [2.2 Use Configmaps And Secrets To Configure Applications](#22-use-configmaps-and-secrets-to-configure-applications)
+    - [Configmaps](#configmaps)
   - [2.3 Know How To Scale Applications](#23-know-how-to-scale-applications)
   - [2.4 Understand The Primitives Used To Create Robust, Self-Healing, Application Deployments](#24-understand-the-primitives-used-to-create-robust-self-healing-application-deployments)
   - [2.5 Understand How Resource Limits Can Affect Pod Scheduling](#25-understand-how-resource-limits-can-affect-pod-scheduling)
@@ -115,6 +116,56 @@ REVISION  CHANGE-CAUSE
 ```
 
 ## 2.2 Use Configmaps And Secrets To Configure Applications
+
+### Configmaps
+
+[Official Documentation](https://kubernetes.io/docs/concepts/configuration/configmap/)
+
+Directory
+
+`kubectl create configmap game-config --from-file=/code/configmap/`
+
+```bash
+~ k describe configmap game-config
+
+Name:         game-config
+Namespace:    default
+Labels:       <none>
+Annotations:  <none>
+
+Data
+====
+game.properties:
+----
+enemies=aliens
+lives=3
+enemies.cheat=true
+enemies.cheat.level=noGoodRotten
+secret.code.passphrase=UUDDLRLRBABAS
+secret.code.allowed=true
+secret.code.lives=30
+
+ui.properties:
+----
+color.good=purple
+color.bad=yellow
+allow.textmode=true
+how.nice.to.look=fairlyNice
+
+Events:  <none>
+```
+
+File
+
+`kubectl create configmap game-config-2 --from-file=/code/configmap/game.properties`
+
+Env-File
+
+`kubectl create configmap game-config-env-file --from-env-file=/code/configmap/game-env-file.properties`
+
+Edit
+
+`kubectl get configmaps game-config-2 -o yaml`
 
 ## 2.3 Know How To Scale Applications
 
