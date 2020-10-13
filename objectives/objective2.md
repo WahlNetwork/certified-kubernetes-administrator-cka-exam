@@ -8,6 +8,8 @@
     - [Perform Rollbacks](#perform-rollbacks)
   - [2.2 Use Configmaps And Secrets To Configure Applications](#22-use-configmaps-and-secrets-to-configure-applications)
     - [Configmaps](#configmaps)
+    - [Secrets](#secrets)
+    - [Image](#image)
   - [2.3 Know How To Scale Applications](#23-know-how-to-scale-applications)
   - [2.4 Understand The Primitives Used To Create Robust, Self-Healing, Application Deployments](#24-understand-the-primitives-used-to-create-robust-self-healing-application-deployments)
   - [2.5 Understand How Resource Limits Can Affect Pod Scheduling](#25-understand-how-resource-limits-can-affect-pod-scheduling)
@@ -22,7 +24,6 @@
 `kubectl create deployment nginx --image=nginx --replicas=3 -n wahlnetwork1`
 
 `kubectl create deployment nginx --image=nginx --replicas=3 -n wahlnetwork1 --dry-run=client -o yaml`
-
 
 ```yaml
 apiVersion: apps/v1
@@ -46,9 +47,9 @@ spec:
         app: nginx
     spec:
       containers:
-      - image: nginx
-        name: nginx
-        resources: {}
+        - image: nginx
+          name: nginx
+          resources: {}
 ```
 
 ### Perform Rolling Update
@@ -120,6 +121,7 @@ REVISION  CHANGE-CAUSE
 ### Configmaps
 
 [Official Documentation](https://kubernetes.io/docs/concepts/configuration/configmap/)
+[Configure a Pod to Use a ConfigMap](https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/)
 
 Directory
 
@@ -166,6 +168,101 @@ Env-File
 Edit
 
 `kubectl get configmaps game-config-2 -o yaml`
+
+Apply a configmap
+
+`kubectl create configmap special-config --from-literal=special.how=very`
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dapi-test-pod
+spec:
+  containers:
+    - name: test-container
+      image: k8s.gcr.io/busybox
+      command: ["/bin/sh", "-c", "env"]
+      env:
+        # Define the environment variable
+        - name: SPECIAL_LEVEL_KEY
+          valueFrom:
+            configMapKeyRef:
+              # The ConfigMap containing the value you want to assign to SPECIAL_LEVEL_KEY
+              name: special-config
+              # Specify the key associated with the value
+              key: special.how
+  restartPolicy: Never
+```
+
+```bash
+~ kubectl logs dapi-test-pod
+
+KUBERNETES_SERVICE_PORT=443
+KUBERNETES_PORT=tcp://10.96.0.1:443
+HOSTNAME=dapi-test-pod
+SHLVL=1
+HOME=/root
+KUBERNETES_PORT_443_TCP_ADDR=10.96.0.1
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+KUBERNETES_PORT_443_TCP_PORT=443
+KUBERNETES_PORT_443_TCP_PROTO=tcp
+SPECIAL_LEVEL_KEY=very
+KUBERNETES_PORT_443_TCP=tcp://10.96.0.1:443
+KUBERNETES_SERVICE_PORT_HTTPS=443
+PWD=/
+KUBERNETES_SERVICE_HOST=10.96.0.1
+```
+
+### Secrets
+
+- [Managing Secret using kubectl](https://kubernetes.io/docs/tasks/configmap-secret/managing-secret-using-kubectl/)
+- [Using Secrets](https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets)
+
+Create
+
+```bash
+kubectl create secret generic db-user-pass `
+  --from-file=./username.txt `
+  --from-file=./password.txt
+```
+
+Get
+
+`kubectl get secret db-user-pass -o jsonpath='{.data}'`
+
+Edit
+
+`kubectl edit secrets mysecret`
+
+Apply
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: secret-env-pod
+spec:
+  containers:
+    - name: mycontainer
+      image: redis
+      env:
+        - name: SECRET_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: mysecret
+              key: username
+        - name: SECRET_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysecret
+              key: password
+  restartPolicy: Never
+```
+
+### Image
+
+[Using imagePullSecrets](https://kubernetes.io/docs/concepts/configuration/secret/#using-imagepullsecrets)
 
 ## 2.3 Know How To Scale Applications
 
