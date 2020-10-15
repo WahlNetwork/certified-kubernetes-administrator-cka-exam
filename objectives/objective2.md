@@ -1,7 +1,5 @@
 # Objective 2: Workloads & Scheduling
 
-> ⚠ This section is not complete ⚠
-
 - [Objective 2: Workloads & Scheduling](#objective-2-workloads--scheduling)
   - [2.1 Understand Deployments And How To Perform Rolling Update And Rollbacks](#21-understand-deployments-and-how-to-perform-rolling-update-and-rollbacks)
     - [Create Deployment](#create-deployment)
@@ -248,7 +246,7 @@ KUBERNETES_SERVICE_HOST=10.96.0.1
 - [Managing Secret using kubectl](https://kubernetes.io/docs/tasks/configmap-secret/managing-secret-using-kubectl/)
 - [Using Secrets](https://kubernetes.io/docs/concepts/configuration/secret/#using-secrets)
 
-Create
+Create a secret named `db-user-pass` using files.
 
 ```bash
 kubectl create secret generic db-user-pass `
@@ -256,15 +254,57 @@ kubectl create secret generic db-user-pass `
   --from-file=./password.txt
 ```
 
-Get
+The key name can be modified by inserting a key name into the file path. For example, setting the key names to `funusername` and `funpassword` can be done as shown below:
+
+```bash
+kubectl create secret generic fundb-user-pass `
+  --from-file=funusername=./username.txt `
+  --from-file=funpassword=./password.txt
+```
+
+Check to make sure the key names matches the defined names.
+
+`kubectl describe secret fundb-user-pass`
+
+```bash
+Name:         fundb-user-pass
+Namespace:    default
+Labels:       <none>
+Annotations:  <none>
+
+Type:  Opaque
+
+Data
+====
+funpassword:  14 bytes
+funusername:  7 bytes
+```
+
+Get secret values from `db-user-pass`.
 
 `kubectl get secret db-user-pass -o jsonpath='{.data}'`
 
-Edit
+Edit secret values using the `edit` command.
 
-`kubectl edit secrets mysecret`
+`kubectl edit secrets db-user-pass`
 
-Apply
+```yaml
+apiVersion: v1
+data:
+  password.txt: PASSWORD
+  username.txt: USERNAME
+kind: Secret
+metadata:
+  creationTimestamp: "2020-10-13T22:48:27Z"
+  name: db-user-pass
+  namespace: default
+  resourceVersion: "1022459"
+  selfLink: /api/v1/namespaces/default/secrets/db-user-pass
+  uid: 6bb24810-dd33-4b92-9a37-424f3c7553b6
+type: Opaque
+```
+
+Use a secret with a pod by declaring a value for `.spec.containers.env.name.valueFrom.secretKeyRef`.
 
 ```yaml
 apiVersion: v1
