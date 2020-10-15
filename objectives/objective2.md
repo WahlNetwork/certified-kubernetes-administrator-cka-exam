@@ -139,7 +139,7 @@ REVISION  CHANGE-CAUSE
 API object used to store non-confidential data in key-value pairs
 
 - [Official Documentation](https://kubernetes.io/docs/concepts/configuration/configmap/)
-[Configure a Pod to Use a ConfigMap](https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/)
+  [Configure a Pod to Use a ConfigMap](https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/)
 
 Create a configmap named `game-config` using a directory.
 
@@ -223,7 +223,6 @@ Investigate the configmap value `very` from the key `SPECIAL_LEVEL_KEY` by revie
 
 `kubectl exec -n wahlnetwork1 --stdin nginx-6889dfccd5-msmn8 --tty -- /bin/bash`
 
-
 ```bash
 ~ kubectl logs dapi-test-pod
 
@@ -295,8 +294,31 @@ spec:
 
 ## 2.3 Know How To Scale Applications
 
+Scaling is accomplished by changing the number of replicas in a Deployment.
+
+- [Running Multiple Instances of Your App](https://kubernetes.io/docs/tutorials/kubernetes-basics/scale/scale-intro/)
+
+Scale a deployment named `nginx` from 3 to 4 replicas.
+
+`kubectl scale deployments/nginx --replicas=4`
+
 ## 2.4 Understand The Primitives Used To Create Robust, Self-Healing, Application Deployments
+
+- Don't use naked Pods (that is, Pods not bound to a ReplicaSet or Deployment) if you can avoid it. Naked Pods will not be rescheduled in the event of a node failure. ([source](https://kubernetes.io/docs/concepts/configuration/overview/#naked-pods-vs-replicasets-deployments-and-jobs))
+- A Deployment, which both creates a ReplicaSet to ensure that the desired number of Pods is always available, and specifies a strategy to replace Pods (such as RollingUpdate), is almost always preferable to creating Pods directly, except for some explicit `restartPolicy: Never` scenarios. A Job may also be appropriate. ([source](https://kubernetes.io/docs/concepts/configuration/overview/#naked-pods-vs-replicasets-deployments-and-jobs))
+- Define and use labels that identify semantic attributes of your application or Deployment, such as `{ app: myapp, tier: frontend, phase: test, deployment: v3 }`. ([source](https://kubernetes.io/docs/concepts/configuration/overview/#using-labels))
 
 ## 2.5 Understand How Resource Limits Can Affect Pod Scheduling
 
+Resource limits are a mechanism to control the amount of resources needed by a container. This commonly translates into CPU and memory limits.
+
+- Limits set an upper boundary on the amount of resources a container is allowed to consume from the host.
+- Requests set an upper boundary on the amount of resources a container is allowed to consume from the host.
+- If a limit is set without a request, the request value is set to equal the limit value.
+- [Managing Resources for Containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/)
+
 ## 2.6 Awareness Of Manifest Management And Common Templating Tools
+
+- [Templating YAML in Kubernetes with real code](https://learnk8s.io/templating-yaml-with-code)
+- [yq](https://github.com/kislyuk/yq): Command-line YAML/XML processor
+- [kustomize](https://github.com/kubernetes-sigs/kustomize): lets you customize raw, template-free YAML files for multiple purposes, leaving the original YAML untouched and usable as is.
