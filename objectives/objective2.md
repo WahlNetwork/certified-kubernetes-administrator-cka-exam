@@ -2,18 +2,19 @@
 
 > ⚠ This section is not complete ⚠
 
-- [2.1 Understand Deployments And How To Perform Rolling Update And Rollbacks](#21-understand-deployments-and-how-to-perform-rolling-update-and-rollbacks)
-  - [Create Deployment](#create-deployment)
-  - [Perform Rolling Update](#perform-rolling-update)
-  - [Perform Rollbacks](#perform-rollbacks)
-- [2.2 Use Configmaps And Secrets To Configure Applications](#22-use-configmaps-and-secrets-to-configure-applications)
-  - [Configmaps](#configmaps)
-  - [Secrets](#secrets)
-  - [Other Concepts](#other-concepts)
-- [2.3 Know How To Scale Applications](#23-know-how-to-scale-applications)
-- [2.4 Understand The Primitives Used To Create Robust, Self-Healing, Application Deployments](#24-understand-the-primitives-used-to-create-robust-self-healing-application-deployments)
-- [2.5 Understand How Resource Limits Can Affect Pod Scheduling](#25-understand-how-resource-limits-can-affect-pod-scheduling)
-- [2.6 Awareness Of Manifest Management And Common Templating Tools](#26-awareness-of-manifest-management-and-common-templating-tools)
+- [Objective 2: Workloads & Scheduling](#objective-2-workloads--scheduling)
+  - [2.1 Understand Deployments And How To Perform Rolling Update And Rollbacks](#21-understand-deployments-and-how-to-perform-rolling-update-and-rollbacks)
+    - [Create Deployment](#create-deployment)
+    - [Perform Rolling Update](#perform-rolling-update)
+    - [Perform Rollbacks](#perform-rollbacks)
+  - [2.2 Use Configmaps And Secrets To Configure Applications](#22-use-configmaps-and-secrets-to-configure-applications)
+    - [Configmaps](#configmaps)
+    - [Secrets](#secrets)
+    - [Other Concepts](#other-concepts)
+  - [2.3 Know How To Scale Applications](#23-know-how-to-scale-applications)
+  - [2.4 Understand The Primitives Used To Create Robust, Self-Healing, Application Deployments](#24-understand-the-primitives-used-to-create-robust-self-healing-application-deployments)
+  - [2.5 Understand How Resource Limits Can Affect Pod Scheduling](#25-understand-how-resource-limits-can-affect-pod-scheduling)
+  - [2.6 Awareness Of Manifest Management And Common Templating Tools](#26-awareness-of-manifest-management-and-common-templating-tools)
 
 ## 2.1 Understand Deployments And How To Perform Rolling Update And Rollbacks
 
@@ -64,7 +65,7 @@ spec:
 
 Used to make changes to the pod's template and roll them out to the cluster. Triggered when data within `.spec.template` is changed.
 
-Update the `nginx` deployment in the `wahlnetwork1` namespace to use version `1.61.1`
+Update the `nginx` deployment in the `wahlnetwork1` namespace to use version `1.16.1`
 
 `kubectl set image deployment/nginx nginx=nginx:1.16.1 -n wahlnetwork1 --record`
 
@@ -316,9 +317,40 @@ Resource limits are a mechanism to control the amount of resources needed by a c
 - Requests set an upper boundary on the amount of resources a container is allowed to consume from the host.
 - If a limit is set without a request, the request value is set to equal the limit value.
 - [Managing Resources for Containers](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/)
+- [Resource Quotas](https://kubernetes.io/docs/concepts/policy/resource-quotas/)
+
+Here is an example of pod configured with resource requests and limits.
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: frontend
+spec:
+  containers:
+    - name: app
+      image: images.my-company.example/app:v4
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "250m"
+        limits:
+          memory: "128Mi"
+          cpu: "500m"
+    - name: log-aggregator
+      image: images.my-company.example/log-aggregator:v6
+      resources:
+        requests:
+          memory: "64Mi"
+          cpu: "250m"
+        limits:
+          memory: "128Mi"
+          cpu: "500m"
+```
 
 ## 2.6 Awareness Of Manifest Management And Common Templating Tools
 
 - [Templating YAML in Kubernetes with real code](https://learnk8s.io/templating-yaml-with-code)
 - [yq](https://github.com/kislyuk/yq): Command-line YAML/XML processor
 - [kustomize](https://github.com/kubernetes-sigs/kustomize): lets you customize raw, template-free YAML files for multiple purposes, leaving the original YAML untouched and usable as is.
+- [Helm](https://github.com/helm/helm): A tool for managing Charts. Charts are packages of pre-configured Kubernetes resources.
