@@ -2,28 +2,34 @@
 
 > ⚠ This section is not complete ⚠
 
-- [Objective 2: Workloads & Scheduling](#objective-2-workloads--scheduling)
-  - [2.1 Understand Deployments And How To Perform Rolling Update And Rollbacks](#21-understand-deployments-and-how-to-perform-rolling-update-and-rollbacks)
-    - [Perform Rolling Update](#perform-rolling-update)
-    - [Perform Rollbacks](#perform-rollbacks)
-  - [2.2 Use Configmaps And Secrets To Configure Applications](#22-use-configmaps-and-secrets-to-configure-applications)
-    - [Configmaps](#configmaps)
-    - [Secrets](#secrets)
-    - [Image](#image)
-  - [2.3 Know How To Scale Applications](#23-know-how-to-scale-applications)
-  - [2.4 Understand The Primitives Used To Create Robust, Self-Healing, Application Deployments](#24-understand-the-primitives-used-to-create-robust-self-healing-application-deployments)
-  - [2.5 Understand How Resource Limits Can Affect Pod Scheduling](#25-understand-how-resource-limits-can-affect-pod-scheduling)
-  - [2.6 Awareness Of Manifest Management And Common Templating Tools](#26-awareness-of-manifest-management-and-common-templating-tools)
+- [2.1 Understand Deployments And How To Perform Rolling Update And Rollbacks](#21-understand-deployments-and-how-to-perform-rolling-update-and-rollbacks)
+  - [Create Deployment](#create-deployment)
+  - [Perform Rolling Update](#perform-rolling-update)
+  - [Perform Rollbacks](#perform-rollbacks)
+- [2.2 Use Configmaps And Secrets To Configure Applications](#22-use-configmaps-and-secrets-to-configure-applications)
+  - [Configmaps](#configmaps)
+  - [Secrets](#secrets)
+  - [Other Concepts](#other-concepts)
+- [2.3 Know How To Scale Applications](#23-know-how-to-scale-applications)
+- [2.4 Understand The Primitives Used To Create Robust, Self-Healing, Application Deployments](#24-understand-the-primitives-used-to-create-robust-self-healing-application-deployments)
+- [2.5 Understand How Resource Limits Can Affect Pod Scheduling](#25-understand-how-resource-limits-can-affect-pod-scheduling)
+- [2.6 Awareness Of Manifest Management And Common Templating Tools](#26-awareness-of-manifest-management-and-common-templating-tools)
 
 ## 2.1 Understand Deployments And How To Perform Rolling Update And Rollbacks
 
 [Official Documentation](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#use-case)
 
-[nginx docker hub](https://hub.docker.com/_/nginx)
+Deployments are used to manage Pods and ReplicaSets in a declarative manner.
+
+### Create Deployment
+
+Using the [nginx](https://hub.docker.com/_/nginx) image on Docker Hub, we can use a Deployment to push any number of replicas of that image to the cluster.
+
+Create the `nginx` deployment in the `wahlnetwork1` namespace.
 
 `kubectl create deployment nginx --image=nginx --replicas=3 -n wahlnetwork1`
 
-`kubectl create deployment nginx --image=nginx --replicas=3 -n wahlnetwork1 --dry-run=client -o yaml`
+> Alternatively, use `kubectl create deployment nginx --image=nginx --replicas=3 -n wahlnetwork1 --dry-run=client -o yaml` to output a proper yaml configuration.
 
 ```yaml
 apiVersion: apps/v1
@@ -56,13 +62,17 @@ spec:
 
 [Official Documentation](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#updating-a-deployment)
 
+Used to make changes to the pod's template and roll them out to the cluster. Triggered when data within `.spec.template` is changed.
+
+Update the `nginx` deployment in the `wahlnetwork1` namespace to use version `1.61.1`
+
 `kubectl set image deployment/nginx nginx=nginx:1.16.1 -n wahlnetwork1 --record`
+
+Track the rollout status.
 
 `kubectl rollout status deployment.v1.apps/nginx -n wahlnetwork1`
 
 ```bash
-~ kubectl rollout status deployment.v1.apps/nginx -n wahlnetwork1
-
 Waiting for deployment "nginx" rollout to finish: 1 out of 2 new replicas have been updated...
 Waiting for deployment "nginx" rollout to finish: 1 out of 2 new replicas have been updated...
 Waiting for deployment "nginx" rollout to finish: 1 out of 2 new replicas have been updated...
@@ -75,22 +85,26 @@ deployment "nginx" successfully rolled out
 
 [Official Documentation](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-back-a-deployment)
 
+Rollbacks offer a method for reverting the changes to a pod's `.spec.template` data to a previous version. By default, executing the `rollout undo` command will revert to the previous version. The desired version can also be declared.
+
+Review the version history for the `nginx` deployment in the `wahlnetwork1` namespace. In this scenario, other revisions 1-4 have been made to simulate a deployment lifecycle. The 4th revision specifies a fake image version of `1.222222222222` to force a rolling update failure.
+
 `kubectl rollout history deployment.v1.apps/nginx -n wahlnetwork1`
 
-`kubectl rollout undo deployment.v1.apps/nginx -n wahlnetwork1`
-
 ```bash
-~ kubectl rollout history deployment.v1.apps/nginx -n wahlnetwork1
-
 deployment.apps/nginx
 REVISION  CHANGE-CAUSE
 1         <none>
 2         kubectl.exe set image deployment/nginx nginx=nginx:1.16.1 --record=true --namespace=wahlnetwork1
 3         kubectl.exe set image deployment/nginx nginx=nginx:1.14.1 --record=true --namespace=wahlnetwork1
 4         kubectl.exe set image deployment/nginx nginx=nginx:1.222222222222 --record=true --namespace=wahlnetwork1
+```
 
-~ kubectl rollout undo deployment.v1.apps/nginx -n wahlnetwork1
+Revert to the previous version of the `nginx` deployment to use image version `1.14.1`. This forces revision 3 to become revision 5. Note that revision 3 no longer exists.
 
+`kubectl rollout undo deployment.v1.apps/nginx -n wahlnetwork1`
+
+```bash
 deployment.apps/nginx rolled back
 
 ~ kubectl rollout history deployment.v1.apps/nginx -n wahlnetwork1
@@ -102,6 +116,8 @@ REVISION  CHANGE-CAUSE
 4         kubectl.exe set image deployment/nginx nginx=nginx:1.222222222222 --record=true --namespace=wahlnetwork1
 5         kubectl.exe set image deployment/nginx nginx=nginx:1.14.1 --record=true --namespace=wahlnetwork1
 ```
+
+Revert to revision 2 of the `nginx` deployment, which becomes revision 6 (the next available revision number). Note that revision 2 no longer exists.
 
 `kubectl rollout undo deployment.v1.apps/nginx -n wahlnetwork1 --to-revision=2`
 
@@ -120,10 +136,12 @@ REVISION  CHANGE-CAUSE
 
 ### Configmaps
 
-[Official Documentation](https://kubernetes.io/docs/concepts/configuration/configmap/)
+API object used to store non-confidential data in key-value pairs
+
+- [Official Documentation](https://kubernetes.io/docs/concepts/configuration/configmap/)
 [Configure a Pod to Use a ConfigMap](https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/)
 
-Directory
+Create a configmap named `game-config` using a directory.
 
 `kubectl create configmap game-config --from-file=/code/configmap/`
 
@@ -157,21 +175,27 @@ how.nice.to.look=fairlyNice
 Events:  <none>
 ```
 
-File
+Create a configmap named `game-config` using a file.
 
 `kubectl create configmap game-config-2 --from-file=/code/configmap/game.properties`
 
-Env-File
+Create a configmap named `game-config` using an env-file.
 
 `kubectl create configmap game-config-env-file --from-env-file=/code/configmap/game-env-file.properties`
 
-Edit
-
-`kubectl get configmaps game-config-2 -o yaml`
-
-Apply a configmap
+Create a configmap named `special-config` using a literal key/value pair.
 
 `kubectl create configmap special-config --from-literal=special.how=very`
+
+Edit a configmap named `game-config`.
+
+`kubectl edit configmap game-config`
+
+Get a configmap named `game-config` and output the response into yaml.
+
+`kubectl get configmaps game-config -o yaml`
+
+Use a configmap with a pod by declaring a value for `.spec.containers.env.name.valueFrom.configMapKeyRef`.
 
 ```yaml
 apiVersion: v1
@@ -194,6 +218,11 @@ spec:
               key: special.how
   restartPolicy: Never
 ```
+
+Investigate the configmap value `very` from the key `SPECIAL_LEVEL_KEY` by reviewing the logs for the pod or by connecting to the pod directly.
+
+`kubectl exec -n wahlnetwork1 --stdin nginx-6889dfccd5-msmn8 --tty -- /bin/bash`
+
 
 ```bash
 ~ kubectl logs dapi-test-pod
@@ -260,9 +289,9 @@ spec:
   restartPolicy: Never
 ```
 
-### Image
+### Other Concepts
 
-[Using imagePullSecrets](https://kubernetes.io/docs/concepts/configuration/secret/#using-imagepullsecrets)
+- [Using imagePullSecrets](https://kubernetes.io/docs/concepts/configuration/secret/#using-imagepullsecrets)
 
 ## 2.3 Know How To Scale Applications
 

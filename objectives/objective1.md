@@ -1,27 +1,26 @@
 # Objective 1: Cluster Architecture, Installation & Configuration
 
-- [Objective 1: Cluster Architecture, Installation & Configuration](#objective-1-cluster-architecture-installation--configuration)
-  - [1.1 Manage Role Based Access Control (RBAC)](#11-manage-role-based-access-control-rbac)
-    - [Lab Environment](#lab-environment)
-    - [Lab Practice](#lab-practice)
-  - [1.2 Use Kubeadm to Install a Basic Cluster](#12-use-kubeadm-to-install-a-basic-cluster)
-    - [Kubeadm Tasks for All Nodes](#kubeadm-tasks-for-all-nodes)
-    - [Kubeadm Tasks for Single Control Node](#kubeadm-tasks-for-single-control-node)
-    - [Kubeadm Tasks for Worker Node(s)](#kubeadm-tasks-for-worker-nodes)
-    - [Kubeadm Troubleshooting](#kubeadm-troubleshooting)
-    - [Kubeadm Optional Tasks](#kubeadm-optional-tasks)
-  - [1.3 Manage A Highly-Available Kubernetes Cluster](#13-manage-a-highly-available-kubernetes-cluster)
-    - [HA Deployment Types](#ha-deployment-types)
-    - [Upgrading from Single Control-Plane to High Availability](#upgrading-from-single-control-plane-to-high-availability)
-  - [1.4 Provision Underlying Infrastructure to Deploy a Kubernetes Cluster](#14-provision-underlying-infrastructure-to-deploy-a-kubernetes-cluster)
-  - [1.5 Perform a Version Upgrade on a Kubernetes Cluster using Kubeadm](#15-perform-a-version-upgrade-on-a-kubernetes-cluster-using-kubeadm)
-    - [First Control Plane Node](#first-control-plane-node)
-    - [Additional Control Plane Nodes](#additional-control-plane-nodes)
-    - [Upgrade Control Plane Node Kubectl And Kubelet Tools](#upgrade-control-plane-node-kubectl-and-kubelet-tools)
-    - [Upgrade Worker Nodes](#upgrade-worker-nodes)
-  - [1.6 Implement Etcd Backup And Restore](#16-implement-etcd-backup-and-restore)
-    - [Snapshot The Keyspace](#snapshot-the-keyspace)
-    - [Restore From Snapshot](#restore-from-snapshot)
+- [1.1 Manage Role Based Access Control (RBAC)](#11-manage-role-based-access-control-rbac)
+  - [Lab Environment](#lab-environment)
+  - [Lab Practice](#lab-practice)
+- [1.2 Use Kubeadm to Install a Basic Cluster](#12-use-kubeadm-to-install-a-basic-cluster)
+  - [Kubeadm Tasks for All Nodes](#kubeadm-tasks-for-all-nodes)
+  - [Kubeadm Tasks for Single Control Node](#kubeadm-tasks-for-single-control-node)
+  - [Kubeadm Tasks for Worker Node(s)](#kubeadm-tasks-for-worker-nodes)
+  - [Kubeadm Troubleshooting](#kubeadm-troubleshooting)
+  - [Kubeadm Optional Tasks](#kubeadm-optional-tasks)
+- [1.3 Manage A Highly-Available Kubernetes Cluster](#13-manage-a-highly-available-kubernetes-cluster)
+  - [HA Deployment Types](#ha-deployment-types)
+  - [Upgrading from Single Control-Plane to High Availability](#upgrading-from-single-control-plane-to-high-availability)
+- [1.4 Provision Underlying Infrastructure to Deploy a Kubernetes Cluster](#14-provision-underlying-infrastructure-to-deploy-a-kubernetes-cluster)
+- [1.5 Perform a Version Upgrade on a Kubernetes Cluster using Kubeadm](#15-perform-a-version-upgrade-on-a-kubernetes-cluster-using-kubeadm)
+  - [First Control Plane Node](#first-control-plane-node)
+  - [Additional Control Plane Nodes](#additional-control-plane-nodes)
+  - [Upgrade Control Plane Node Kubectl And Kubelet Tools](#upgrade-control-plane-node-kubectl-and-kubelet-tools)
+  - [Upgrade Worker Nodes](#upgrade-worker-nodes)
+- [1.6 Implement Etcd Backup And Restore](#16-implement-etcd-backup-and-restore)
+  - [Snapshot The Keyspace](#snapshot-the-keyspace)
+  - [Restore From Snapshot](#restore-from-snapshot)
 
 ## 1.1 Manage Role Based Access Control (RBAC)
 
@@ -140,45 +139,45 @@ subjects:
 
 Create the `cluster-pod-reader` clusterrole.
 
-`kubectl create clusterrole cluster-pod-reader --verb=get --verb=list --verb=watch --resource=pods`
+`kubectl create clusterrole cluster-secrets-reader --verb=get --verb=list --verb=watch --resource=secrets`
 
-> Alternatively, use `kubectl create clusterrole cluster-pod-reader --verb=get --verb=list --verb=watch --resource=pods --dry-run=client -o yaml` to output a proper yaml configuration.
+> Alternatively, use `kubectl create clusterrole cluster-secrets-reader --verb=get --verb=list --verb=watch --resource=secrets --dry-run=client -o yaml` to output a proper yaml configuration.
 
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   creationTimestamp: null
-  name: cluster-pod-reader
+  name: cluster-secrets-reader
 rules:
-  - apiGroups:
-      - ""
-    resources:
-      - pods
-    verbs:
-      - get
-      - list
-      - watch
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
 ```
 
 ---
 
-Create the `cluster-read-pods` clusterrolebinding between the clusterrole named `cluster-pod-reader` and the user `gizmo`.
+Create the `cluster-read-secrets` clusterrolebinding between the clusterrole named `cluster-secrets-reader` and the user `gizmo`.
 
-`kubectl create clusterrolebinding --clusterrole=cluster-pod-reader --user=gizmo cluster-read-pods`
+`kubectl create clusterrolebinding --clusterrole=cluster-secrets-reader --user=gizmo cluster-read-secrets`
 
-> Alternatively, use `kubectl create clusterrolebinding --clusterrole=cluster-pod-reader --user=gizmo cluster-read-pods --dry-run=client -o yaml` to output a proper yaml configuration.
+> Alternatively, use `kubectl create clusterrolebinding --clusterrole=cluster-secrets-reader --user=gizmo cluster-read-secrets --dry-run=client -o yaml` to output a proper yaml configuration.
 
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   creationTimestamp: null
-  name: cluster-read-pods
+  name: cluster-read-secrets
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: cluster-pod-reader
+  name: cluster-secrets-reader
 subjects:
   - apiGroup: rbac.authorization.k8s.io
     kind: User
