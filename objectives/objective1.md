@@ -116,9 +116,9 @@ rules:
 
 Create the `read-pods` rolebinding between the role named `pod-reader` and the user `spongebob` in the `wahlnetwork1` namespace.
 
-`kubectl create rolebinding --role=pod-reader --user=spongebob read-pods`
+`kubectl create rolebinding --role=pod-reader --user=spongebob read-pods -n wahlnetwork1`
 
-> Alternatively, use `kubectl create rolebinding --role=pod-reader --user=spongebob read-pods --dry-run=client -o yaml` to output a proper yaml configuration.
+> Alternatively, use `kubectl create rolebinding --role=pod-reader --user=spongebob read-pods -n wahlnetwork1 --dry-run=client -o yaml` to output a proper yaml configuration.
 
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -138,51 +138,64 @@ subjects:
 
 ---
 
-Create the `cluster-pod-reader` clusterrole.
+Create the `cluster-secrets-reader` clusterrole.
 
-`kubectl create clusterrole cluster-pod-reader --verb=get --verb=list --verb=watch --resource=pods`
+`kubectl create clusterrole cluster-secrets-reader --verb=get --verb=list --verb=watch --resource=secrets`
 
-> Alternatively, use `kubectl create clusterrole cluster-pod-reader --verb=get --verb=list --verb=watch --resource=pods --dry-run=client -o yaml` to output a proper yaml configuration.
+> Alternatively, use `kubectl create clusterrole cluster-secrets-reader --verb=get --verb=list --verb=watch --resource=secrets --dry-run=client -o yaml` to output a proper yaml configuration.
 
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   creationTimestamp: null
-  name: cluster-pod-reader
+  name: cluster-secrets-reader
 rules:
-  - apiGroups:
-      - ""
-    resources:
-      - pods
-    verbs:
-      - get
-      - list
-      - watch
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - list
+  - watch
 ```
 
 ---
 
-Create the `cluster-read-pods` clusterrolebinding between the clusterrole named `cluster-pod-reader` and the user `gizmo`.
+Create the `cluster-read-secrets` clusterrolebinding between the clusterrole named `cluster-secrets-reader` and the user `gizmo`.
 
-`kubectl create clusterrolebinding --clusterrole=cluster-pod-reader --user=gizmo cluster-read-pods`
+`kubectl create clusterrolebinding --clusterrole=cluster-secrets-reader --user=gizmo cluster-read-secrets`
 
-> Alternatively, use `kubectl create clusterrolebinding --clusterrole=cluster-pod-reader --user=gizmo cluster-read-pods --dry-run=client -o yaml` to output a proper yaml configuration.
+> Alternatively, use `kubectl create clusterrolebinding --clusterrole=cluster-secrets-reader --user=gizmo cluster-read-secrets --dry-run=client -o yaml` to output a proper yaml configuration.
 
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   creationTimestamp: null
-  name: cluster-read-pods
+  name: cluster-read-secrets
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: cluster-pod-reader
+  name: cluster-secrets-reader
 subjects:
   - apiGroup: rbac.authorization.k8s.io
     kind: User
     name: gizmo
+```
+
+Test to see if this works by running the `auth` command.
+
+`kubectl auth can-i get secrets --as=gizmo`
+
+Attempt to get secrets as the `gizmo` user.
+
+`kubectl get secrets --as=gizmo`
+
+```bash
+NAME                  TYPE                                  DATA   AGE
+default-token-lz87v   kubernetes.io/service-account-token   3      7d1h
 ```
 
 ## 1.2 Use Kubeadm to Install a Basic Cluster

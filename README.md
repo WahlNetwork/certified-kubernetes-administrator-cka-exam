@@ -8,18 +8,19 @@ This repository contains a study guide created in preparation for passing the Ce
 
 Every [Exam Objective](#exam-objectives) is broken down into helpful links, commands, videos, scripts, code samples, and more so that you can refer back to this guide during your studies. Everything here is open source and made by a community of inclusive and friendly folks. If you found this project helpful, why not give us a 🌟 to help increase awareness!
 
-- [Project Overview](#project-overview)
-- [Exam Objectives](#exam-objectives)
-- [Resources](#resources)
-  - [📝 Official References](#-official-references)
-  - [🎓 Online Training](#-online-training)
-  - [🛠 Tools](#-tools)
-  - [🤗 Community](#-community)
-- [The Fine Print](#the-fine-print)
-  - [Disclaimer](#disclaimer)
-  - [Contributing](#contributing)
-  - [Code of Conduct](#code-of-conduct)
-  - [License](#license)
+- [Certified Kubernetes Administrator (CKA) Exam Study Guide](#certified-kubernetes-administrator-cka-exam-study-guide)
+  - [Project Overview](#project-overview)
+  - [Exam Objectives](#exam-objectives)
+  - [Resources](#resources)
+    - [📝 Official References](#-official-references)
+    - [🎓 Online Training](#-online-training)
+    - [🛠 Tools](#-tools)
+    - [🤗 Community](#-community)
+  - [The Fine Print](#the-fine-print)
+    - [Disclaimer](#disclaimer)
+    - [Contributing](#contributing)
+    - [Code of Conduct](#code-of-conduct)
+    - [License](#license)
 
 ## Project Overview
 
@@ -38,7 +39,7 @@ Additionally, you can watch this brief introduction video below:
 The CNCF curriculum is posted [here](https://github.com/cncf/curriculum). The percentage after each objective is the relative score weight on the exam.
 
 - [Objective 1: Cluster Architecture, Installation & Configuration](objectives/objective1.md) ✔
-- [Objective 2: Workloads & Scheduling](objectives/objective2.md) ⚠ WIP
+- [Objective 2: Workloads & Scheduling](objectives/objective2.md) ✔
 - [Objective 3: Services & Networking](objectives/objective3.md) ⚠ WIP
 - [Objective 4: Storage](objectives/objective4.md) ⚠ WIP
 - [Objective 5: Troubleshooting](objectives/objective5.md) ⚠ WIP
@@ -67,6 +68,7 @@ Fantastic resources from around the world.
 
 ### 🤗 Community
 
+- [Kubernetes tools and resources from learnk8s](https://learnk8s.io/kubernetes-resources)
 - [How I passed the CKA (Certified Kubernetes Administrator) Exam](https://medium.com/platformer-blog/how-i-passed-the-cka-certified-kubernetes-administrator-exam-8943aa24d71d)
 - [Best Practices for CKA Exam](https://medium.com/@emreodabas_20110/best-practices-for-cka-exam-9c1e51ea9b29)
 - [Practice Enough With These 150 Questions for the CKAD Exam](https://medium.com/bb-tutorials-and-thoughts/practice-enough-with-these-questions-for-the-ckad-exam-2f42d1228552)
