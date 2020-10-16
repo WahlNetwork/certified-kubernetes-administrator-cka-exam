@@ -24,3 +24,6 @@ EOF
 sudo apt-get update
 sudo apt-get install -y kubelet kubeadm kubectl
 sudo apt-mark hold kubelet kubeadm kubectl
+
+# Setup aliases
+sudo printf "alias k=kubectl\ncomplete -F __start_kubectl k" > ~/.bash_aliases
