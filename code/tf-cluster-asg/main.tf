@@ -12,11 +12,6 @@ data "aws_subnet" "subnet" {
   }
 }
 
-# Povides the user_data value
-data "local_file" "user_data" {
-  filename = "user_data.sh"
-}
-
 # Provides an AWS Launch Template for constructing EC2 instances
 resource "aws_launch_template" "cka-node" {
   name                   = var.instance-name
@@ -51,11 +46,11 @@ resource "aws_launch_template" "cka-node" {
       source      = "Terraform"
     }
   }
-  user_data = data.local_file.user_data.content_base64
+  user_data = filebase64("user_data.sh")
 }
 
 # Provides an Auto Scaling group using instances described in the Launch Template
-resource "aws_autoscaling_group" "cka-cluster-1" {
+resource "aws_autoscaling_group" "cka-cluster" {
   desired_capacity    = var.node-count
   max_size            = var.node-count
   min_size            = var.node-count
