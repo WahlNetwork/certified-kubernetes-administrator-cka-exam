@@ -68,12 +68,14 @@ Fantastic resources from around the world.
 
 ### 🤗 Community
 
-- [Kubernetes tools and resources from learnk8s](https://learnk8s.io/kubernetes-resources)
-- [How I passed the CKA (Certified Kubernetes Administrator) Exam](https://medium.com/platformer-blog/how-i-passed-the-cka-certified-kubernetes-administrator-exam-8943aa24d71d)
 - [Best Practices for CKA Exam](https://medium.com/@emreodabas_20110/best-practices-for-cka-exam-9c1e51ea9b29)
+- [How I passed the CKA (Certified Kubernetes Administrator) Exam](https://medium.com/platformer-blog/how-i-passed-the-cka-certified-kubernetes-administrator-exam-8943aa24d71d)
+- [How to pass the New CKA exam released at September 2020](https://medium.com/@krishna.sharma1408/how-to-pass-the-new-cka-exam-released-at-september-2020-e0e014d67f78)
+- [Interesting Kubernetes application demos](https://www.virtuallyghetto.com/2020/06/interesting-kubernetes-application-demos.html)
+- [Kubernetes the Hard Way - Kelsey Hightower](https://github.com/kelseyhightower/kubernetes-the-hard-way)
+- [Kubernetes tools and resources from learnk8s](https://learnk8s.io/kubernetes-resources)
 - [Practice Enough With These 150 Questions for the CKAD Exam](https://medium.com/bb-tutorials-and-thoughts/practice-enough-with-these-questions-for-the-ckad-exam-2f42d1228552)
 - [walidshaari's Kubernetes-Certified-Administrator Repo](https://github.com/walidshaari/Kubernetes-Certified-Administrator)
-- [Interesting Kubernetes application demos](https://www.virtuallyghetto.com/2020/06/interesting-kubernetes-application-demos.html)
 
 ## The Fine Print
 
