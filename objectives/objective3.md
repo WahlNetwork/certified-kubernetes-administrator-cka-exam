@@ -67,22 +67,40 @@ kind: Service
 metadata:
   creationTimestamp: null
   labels:
-    app: funkyapp1
+    app: funkyapp1 #Selector
   name: funkyip
 spec:
   ports:
-    - port: 80
-      protocol: TCP
-      targetPort: 8080
+  - port: 80
+    protocol: TCP
+    targetPort: 8080
   selector:
     app: funkyapp1
+  type: ClusterIP #Note this!
+```
+
+Using `kubectl describe svc funkyip` shows more details:
+
+```bash
+Name:              funkyip
+Namespace:         default
+Labels:            app=funkyapp1
+Annotations:       <none>
+Selector:          app=funkyapp1
+Type:              ClusterIP
+IP:                10.109.9.63
+Port:              <unset>  80/TCP
+TargetPort:        8080/TCP
+Endpoints:         192.168.15.214:8080
+Session Affinity:  None
+Events:            <none>
 ```
 
 Check to make sure the `funkyip` service exists. This also shows the assigned service (cluster IP) address.
 
-```bash
-~ kubectl get svc
+`kubectl get svc`
 
+```bash
 NAME         TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)   AGE
 funkyip      ClusterIP   10.109.9.63   <none>        80/TCP    2s
 kubernetes   ClusterIP   10.96.0.1     <none>        443/TCP   20m
@@ -90,8 +108,9 @@ kubernetes   ClusterIP   10.96.0.1     <none>        443/TCP   20m
 
 From there, you can see the endpoint created to match any pod discovered using the `app: funkyapp1` label.
 
+`kubectl get endpoints`
+
 ```bash
-~ kubectl get endpoints
 NAME         ENDPOINTS             AGE
 funkyip      192.168.15.214:8080   5s
 kubernetes   10.121.8.58:6443      20m
@@ -99,9 +118,9 @@ kubernetes   10.121.8.58:6443      20m
 
 The endpoint matches the IP address of the matching pod.
 
-```bash
-~ kubectl get pods -o wide
+`kubectl get pods -o wide`
 
+```bash
 NAME                         READY   STATUS    RESTARTS   AGE     IP               NODE
 funkyapp1-65db59f547-sqzzg   1/1     Running   0          3m19s   192.168.15.214   ip-10-121-8-239
 ```
@@ -122,9 +141,6 @@ From there, use `curl $CLUSTER_IP:80` to hit the service `port`, which redirects
 ### NodePort
 
 - Exposes the Service on each Node's IP at a static port (the NodePort).
-- A ClusterIP Service, to which the NodePort Service routes, is automatically created.
-- You'll be able to contact the NodePort Service, from outside the cluster, by requesting.
-- [Kubectl Patch Command Reference](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#patch)
 
 `kubectl expose deployment funkyapp1 --name=funkynode --port=80 --target-port=8080 --type=NodePort`
 
@@ -134,27 +150,127 @@ kind: Service
 metadata:
   creationTimestamp: null
   labels:
-    app: funkyapp1
+    app: funkyapp1 #Selector
   name: funkynode
 spec:
   ports:
-    - port: 80
-      protocol: TCP
-      targetPort: 8080
+  - port: 80
+    protocol: TCP
+    targetPort: 8080
   selector:
     app: funkyapp1
-  type: NodePort
+  type: NodePort #Note this!
+```
+
+This service is available on each node at a specific port.
+
+`kubectl describe svc funkynode`
+
+```bash
+Name:                     funkynode
+Namespace:                default
+Labels:                   app=funkyapp1
+Annotations:              <none>
+Selector:                 app=funkyapp1
+Type:                     NodePort
+IP:                       10.109.180.28
+Port:                     <unset>  80/TCP
+TargetPort:               8080/TCP
+NodePort:                 <unset>  32332/TCP #This is the node port
+Endpoints:                192.168.15.214:8080
+Session Affinity:         None
+External Traffic Policy:  Cluster
+Events:                   <none>
+```
+
+By using the node IP address with the `nodePort` value, we can see the desired payload. Make sure to scale the deployment so that each node is running one replica of the pod. For a cluster with 2 worker nodes, this can be done with `kubectl scale deploy funkyapp1 --replicas=2`.
+
+`curl 10.121.8.239:32332`
+
+```bash
+CLIENT VALUES:
+client_address=10.121.8.239
+command=GET
+real path=/
+query=nil
+request_version=1.1
+request_uri=http://10.121.8.239:8080/
+
+SERVER VALUES:
+server_version=nginx: 1.10.0 - lua: 10001
+
+HEADERS RECEIVED:
+accept=*/*
+host=10.121.8.239:32332
+user-agent=curl/7.58.0
+BODY:
+-no body in request-
 ```
 
 ### LoadBalancer
 
 - Exposes the Service externally using a cloud provider's load balancer.
 - NodePort and ClusterIP Services, to which the external load balancer routes, are automatically created.
-- [???MOAR INVESTIGATION IS REQUIRED](https://kubernetes.io/docs/tutorials/services/source-ip/#source-ip-for-services-with-type-loadbalancer)
+- [Source IP for Services with Type LoadBalancer](https://kubernetes.io/docs/tutorials/services/source-ip/#source-ip-for-services-with-type-loadbalancer)
+
+`kubectl expose deployment funkyapp1 --name=funkylb --port=80 --target-port=8080 --type=LoadBalancer`
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: funkyapp1
+  name: funkylb
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: funkyapp1
+  type: LoadBalancer #Note this!
+```
+
+Get information on the `funkylb` service to determine the External IP address.
+
+`kubectl get svc funkylb`
+
+```bash
+NAME      TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
+funkylb   LoadBalancer   10.111.6.199   1.2.3.4       80:30648/TCP   2m38s
+```
+
+It is then possible to retrieve the payload using the External IP address and port value.
+
+`curl http://1.2.3.4:80`
 
 ### ExternalIP
 
 [Official Documentation](https://kubernetes.io/docs/concepts/services-networking/service/#external-ips)
+
+- Exposes a Kubernetes service on an external IP address.
+- Kubernetes has no control over this external IP address.
+
+Here is an example spec:
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-service
+spec:
+  selector:
+    app: MyApp
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 9376
+  externalIPs:
+    - 80.11.12.10 #Take note!
+```
 
 ### ExternalName
 
