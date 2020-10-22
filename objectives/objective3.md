@@ -21,8 +21,8 @@
   - All nodes can talk
   - All pods can talk (without NAT)
   - Every pod gets a unique IP address
-- Network Types
 
+- Network Types
   - Pod Network
   - Node Network
   - Services Network
@@ -30,7 +30,12 @@
 
 - Proxy Modes
   - IPTables Mode
-    - ???
+    - The standard mode
+    - `kube-proxy` watches the Kubernetes control plane for the addition and removal of Service and Endpoint objects
+    - For each Service, it installs iptables rules, which capture traffic to the Service's clusterIP and port, and redirect that traffic to one of the Service's backend sets.
+    - For each Endpoint object, it installs iptables rules which select a backend Pod.
+    - [Official Documentation](https://kubernetes.io/docs/concepts/services-networking/service/#proxy-mode-iptables)
+    - [Kubernetes Networking Demystified: A Brief Guide](https://www.stackrox.com/post/2020/01/kubernetes-networking-demystified/)
   - IPVS Mode
     - Since 1.11
     - Linux IP Virtual Server (IPVS)
@@ -53,7 +58,7 @@ Services are all about abstracting away the details of which pods are running be
 - [Using Source IP](https://kubernetes.io/docs/tutorials/services/source-ip/)
 - [Kubectl Expose Command Reference](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#expose)
 
-One option is to create a deployment and then expose the deployment. In this example, the deployment is exposed using a ClusterIP service that accepts traffic on port 80 and translates it to the pod using port 8080.
+The imperative option is to create a deployment and then expose the deployment. In this example, the deployment is exposed using a ClusterIP service that accepts traffic on port 80 and translates it to the pod using port 8080.
 
 `kubectl create deployment funkyapp1 --image=k8s.gcr.io/echoserver:1.4`
 
@@ -96,6 +101,8 @@ Session Affinity:  None
 Events:            <none>
 ```
 
+---
+
 Check to make sure the `funkyip` service exists. This also shows the assigned service (cluster IP) address.
 
 `kubectl get svc`
@@ -105,6 +112,8 @@ NAME         TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)   AGE
 funkyip      ClusterIP   10.109.9.63   <none>        80/TCP    2s
 kubernetes   ClusterIP   10.96.0.1     <none>        443/TCP   20m
 ```
+
+---
 
 From there, you can see the endpoint created to match any pod discovered using the `app: funkyapp1` label.
 
@@ -116,6 +125,8 @@ funkyip      192.168.15.214:8080   5s
 kubernetes   10.121.8.58:6443      20m
 ```
 
+---
+
 The endpoint matches the IP address of the matching pod.
 
 `kubectl get pods -o wide`
@@ -124,6 +135,8 @@ The endpoint matches the IP address of the matching pod.
 NAME                         READY   STATUS    RESTARTS   AGE     IP               NODE
 funkyapp1-65db59f547-sqzzg   1/1     Running   0          3m19s   192.168.15.214   ip-10-121-8-239
 ```
+
+---
 
 The `.spec.ports.port` value defines the port used to access the service. The `.spec.ports.targetPort` value defines the port used to access the container's application.
 
@@ -141,6 +154,7 @@ From there, use `curl $CLUSTER_IP:80` to hit the service `port`, which redirects
 ### NodePort
 
 - Exposes the Service on each Node's IP at a static port (the NodePort).
+- [Official Documentation](https://kubernetes.io/docs/concepts/services-networking/service/#nodeport)
 
 `kubectl expose deployment funkyapp1 --name=funkynode --port=80 --target-port=8080 --type=NodePort`
 
@@ -162,6 +176,8 @@ spec:
   type: NodePort #Note this!
 ```
 
+---
+
 This service is available on each node at a specific port.
 
 `kubectl describe svc funkynode`
@@ -182,6 +198,8 @@ Session Affinity:         None
 External Traffic Policy:  Cluster
 Events:                   <none>
 ```
+
+---
 
 By using the node IP address with the `nodePort` value, we can see the desired payload. Make sure to scale the deployment so that each node is running one replica of the pod. For a cluster with 2 worker nodes, this can be done with `kubectl scale deploy funkyapp1 --replicas=2`.
 
@@ -232,6 +250,8 @@ spec:
     app: funkyapp1
   type: LoadBalancer #Note this!
 ```
+
+---
 
 Get information on the `funkylb` service to determine the External IP address.
 
