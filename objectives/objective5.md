@@ -2,6 +2,8 @@
 
 > ⚠ This section is not complete ⚠
 
+- [Troubleshooting Kubernetes deployments](https://learnk8s.io/troubleshooting-deployments)
+
 - [Objective 5: Troubleshooting](#objective-5-troubleshooting)
   - [5.1 Evaluate Cluster And Node Logging](#51-evaluate-cluster-and-node-logging)
   - [5.2 Understand How To Monitor Applications](#52-understand-how-to-monitor-applications)
