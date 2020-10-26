@@ -8,19 +8,19 @@ This repository contains a study guide created in preparation for passing the Ce
 
 Every [Exam Objective](#exam-objectives) is broken down into helpful links, commands, videos, scripts, code samples, and more so that you can refer back to this guide during your studies. Everything here is open source and made by a community of inclusive and friendly folks. If you found this project helpful, why not give us a 🌟 to help increase awareness!
 
-- [Certified Kubernetes Administrator (CKA) Exam Study Guide](#certified-kubernetes-administrator-cka-exam-study-guide)
-  - [Project Overview](#project-overview)
-  - [Exam Objectives](#exam-objectives)
-  - [Resources](#resources)
-    - [📝 Official References](#-official-references)
-    - [🎓 Online Training](#-online-training)
-    - [🛠 Tools](#-tools)
-    - [🤗 Community](#-community)
-  - [The Fine Print](#the-fine-print)
-    - [Disclaimer](#disclaimer)
-    - [Contributing](#contributing)
-    - [Code of Conduct](#code-of-conduct)
-    - [License](#license)
+- [Project Overview](#project-overview)
+- [Exam Objectives](#exam-objectives)
+- [Resources](#resources)
+  - [📝 Official References](#-official-references)
+  - [🎓 Online Training](#-online-training)
+  - [🛠 Tools](#-tools)
+- [Managed Kubernetes Clusters](#managed-kubernetes-clusters)
+  - [🤗 Community](#-community)
+- [The Fine Print](#the-fine-print)
+  - [Disclaimer](#disclaimer)
+  - [Contributing](#contributing)
+  - [Code of Conduct](#code-of-conduct)
+  - [License](#license)
 
 ## Project Overview
 
@@ -66,6 +66,14 @@ Fantastic resources from around the world, sorted alphabetically.
 
 - [Kubectl-fzf Autocomplete](https://github.com/bonnefoa/kubectl-fzf)
 - [Power tools for kubectl](https://github.com/ahmetb/kubectx)
+
+## Managed Kubernetes Clusters
+
+- Google Kubernetes Engine (GKE)
+  - [Creating a GKE Zonal Cluster](https://cloud.google.com/kubernetes-engine/docs/how-to/creating-a-zonal-cluster)
+  - [Generating a kubeconfig entry](https://cloud.google.com/kubernetes-engine/docs/how-to/cluster-access-for-kubectl#generate_kubeconfig_entry)
+
+> Read [Configure Access to Multiple Clusters](https://kubernetes.io/docs/tasks/access-application-cluster/configure-access-multiple-clusters/) to switch between different clusters while studying.
 
 ### 🤗 Community
 
