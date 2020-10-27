@@ -15,6 +15,7 @@ Every [Exam Objective](#exam-objectives) is broken down into helpful links, comm
     - [📝 Official References](#-official-references)
     - [🎓 Online Training](#-online-training)
     - [🛠 Tools](#-tools)
+  - [Managed Kubernetes Clusters](#managed-kubernetes-clusters)
     - [🤗 Community](#-community)
   - [The Fine Print](#the-fine-print)
     - [Disclaimer](#disclaimer)
@@ -40,7 +41,7 @@ The CNCF curriculum is posted [here](https://github.com/cncf/curriculum). The pe
 
 - [Objective 1: Cluster Architecture, Installation & Configuration](objectives/objective1.md) ✔
 - [Objective 2: Workloads & Scheduling](objectives/objective2.md) ✔
-- [Objective 3: Services & Networking](objectives/objective3.md) ⚠ WIP (50% done)
+- [Objective 3: Services & Networking](objectives/objective3.md) ✔
 - [Objective 4: Storage](objectives/objective4.md) ⚠ WIP
 - [Objective 5: Troubleshooting](objectives/objective5.md) ⚠ WIP
 
@@ -66,6 +67,14 @@ Fantastic resources from around the world, sorted alphabetically.
 
 - [Kubectl-fzf Autocomplete](https://github.com/bonnefoa/kubectl-fzf)
 - [Power tools for kubectl](https://github.com/ahmetb/kubectx)
+
+## Managed Kubernetes Clusters
+
+- Google Kubernetes Engine (GKE)
+  - [Creating a GKE Zonal Cluster](https://cloud.google.com/kubernetes-engine/docs/how-to/creating-a-zonal-cluster)
+  - [Generating a kubeconfig entry](https://cloud.google.com/kubernetes-engine/docs/how-to/cluster-access-for-kubectl#generate_kubeconfig_entry)
+
+> Read [Configure Access to Multiple Clusters](https://kubernetes.io/docs/tasks/access-application-cluster/configure-access-multiple-clusters/) to switch between different clusters while studying.
 
 ### 🤗 Community
 

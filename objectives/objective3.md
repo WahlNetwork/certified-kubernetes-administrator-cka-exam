@@ -1,7 +1,5 @@
 # Objective 3: Services & Networking
 
-> ⚠ This section is not complete ⚠
-
 - [Objective 3: Services & Networking](#objective-3-services--networking)
   - [3.1 Understand Host Networking Configuration On The Cluster Nodes](#31-understand-host-networking-configuration-on-the-cluster-nodes)
   - [3.2 Understand Connectivity Between Pods](#32-understand-connectivity-between-pods)
@@ -11,22 +9,27 @@
     - [LoadBalancer](#loadbalancer)
     - [ExternalIP](#externalip)
     - [ExternalName](#externalname)
+    - [Networking Cleanup for Objective 3.3](#networking-cleanup-for-objective-33)
   - [3.4 Know How To Use Ingress Controllers And Ingress Resources](#34-know-how-to-use-ingress-controllers-and-ingress-resources)
   - [3.5 Know How To Configure And Use CoreDNS](#35-know-how-to-configure-and-use-coredns)
   - [3.6 Choose An Appropriate Container Network Interface Plugin](#36-choose-an-appropriate-container-network-interface-plugin)
 
+> Note: If you need access to the pod network while working through the networking examples, use the [Get a Shell to a Running Container](https://kubernetes.io/docs/tasks/debug-application-cluster/get-shell-running-container/) guide to deploy a shell container. I often like to have a tab open to the shell container to run arbitrary network commands without the need to `exec` in and out of it repeatedly.
+
 ## 3.1 Understand Host Networking Configuration On The Cluster Nodes
 
 - Design
+
   - All nodes can talk
   - All pods can talk (without NAT)
   - Every pod gets a unique IP address
 
 - Network Types
+
   - Pod Network
   - Node Network
   - Services Network
-    - Rewrites egress traffic destinated to a service network endpoint with a pod network IP address
+    - Rewrites egress traffic destined to a service network endpoint with a pod network IP address
 
 - Proxy Modes
   - IPTables Mode
@@ -43,12 +46,27 @@
 
 ## 3.2 Understand Connectivity Between Pods
 
+[Official Documentation](https://kubernetes.io/docs/concepts/cluster-administration/networking/)
+
+Read [The Kubernetes network model](https://kubernetes.io/docs/concepts/cluster-administration/networking/#the-kubernetes-network-model):
+
+- Every pod gets its own address
+- Fundamental requirements on any networking implementation
+  - Pods on a node can communicate with all pods on all nodes without NAT
+  - Agents on a node (e.g. system daemons, kubelet) can communicate with all pods on that node
+  - Pods in the host network of a node can communicate with all pods on all nodes without NAT
+- Kubernetes IP addresses exist at the Pod scope
+  - Containers within a pod can communicate with one another over `localhost`
+  - "IP-per-pod" model
+
 ## 3.3 Understand ClusterIP, NodePort, LoadBalancer Service Types And Endpoints
 
 Services are all about abstracting away the details of which pods are running behind a particular network endpoint. For many applications, work must be processed by some other service. Using a service allows the application to "toss over" the work to Kubernetes, which then uses a selector to determine which pods are healthy and available to receive the work. The service abstracts numerous replica pods that are available to do work.
 
-[Official Documentation](https://kubernetes.io/docs/concepts/services-networking/service/)
-[Katakoda Networking Introduction](https://www.katacoda.com/courses/kubernetes/networking-introduction)
+- [Official Documentation](https://kubernetes.io/docs/concepts/services-networking/service/)
+- [Katakoda Networking Introduction](https://www.katacoda.com/courses/kubernetes/networking-introduction)
+
+> Note: This section was completed using a GKE cluster and may differ from what your cluster looks like.
 
 ### ClusterIP
 
@@ -76,9 +94,9 @@ metadata:
   name: funkyip
 spec:
   ports:
-  - port: 80
-    protocol: TCP
-    targetPort: 8080
+    - port: 80
+      protocol: TCP
+      targetPort: 8080
   selector:
     app: funkyapp1
   type: ClusterIP #Note this!
@@ -90,13 +108,13 @@ Using `kubectl describe svc funkyip` shows more details:
 Name:              funkyip
 Namespace:         default
 Labels:            app=funkyapp1
-Annotations:       <none>
+Annotations:       cloud.google.com/neg: {"ingress":true}
 Selector:          app=funkyapp1
 Type:              ClusterIP
-IP:                10.109.9.63
+IP:                10.108.3.156
 Port:              <unset>  80/TCP
 TargetPort:        8080/TCP
-Endpoints:         192.168.15.214:8080
+Endpoints:         10.104.2.7:8080
 Session Affinity:  None
 Events:            <none>
 ```
@@ -105,24 +123,22 @@ Events:            <none>
 
 Check to make sure the `funkyip` service exists. This also shows the assigned service (cluster IP) address.
 
-`kubectl get svc`
+`kubectl get svc funkyip`
 
 ```bash
-NAME         TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)   AGE
-funkyip      ClusterIP   10.109.9.63   <none>        80/TCP    2s
-kubernetes   ClusterIP   10.96.0.1     <none>        443/TCP   20m
+NAME         TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
+funkyip      ClusterIP   10.108.3.156   <none>        80/TCP    21m
 ```
 
 ---
 
 From there, you can see the endpoint created to match any pod discovered using the `app: funkyapp1` label.
 
-`kubectl get endpoints`
+`kubectl get endpoints funkyip`
 
 ```bash
-NAME         ENDPOINTS             AGE
-funkyip      192.168.15.214:8080   5s
-kubernetes   10.121.8.58:6443      20m
+NAME         ENDPOINTS           AGE
+funkyip      10.104.2.7:8080     21m
 ```
 
 ---
@@ -132,8 +148,9 @@ The endpoint matches the IP address of the matching pod.
 `kubectl get pods -o wide`
 
 ```bash
-NAME                         READY   STATUS    RESTARTS   AGE     IP               NODE
-funkyapp1-65db59f547-sqzzg   1/1     Running   0          3m19s   192.168.15.214   ip-10-121-8-239
+NAME                         READY   STATUS    RESTARTS   AGE     IP            NODE                                                NOMINATED NODE   READINESS GATES
+funkyapp1-7b478ccf9b-2vlc2   1/1     Running   0          21m     10.104.2.7    gke-my-first-cluster-1-default-pool-504c1e77-zg6v   <none>           <none>
+shell-demo                   1/1     Running   0          3m12s   10.128.0.14   gke-my-first-cluster-1-default-pool-504c1e77-m9lk   <none>           <none>
 ```
 
 ---
@@ -150,6 +167,28 @@ echo CLUSTER_IP=$CLUSTER_IP
 ```
 
 From there, use `curl $CLUSTER_IP:80` to hit the service `port`, which redirects to the `targetPort` of 8080.
+
+`curl 10.108.3.156:80`
+
+```bash
+CLIENT VALUES:
+client_address=10.128.0.14
+command=GET
+real path=/
+query=nil
+request_version=1.1
+request_uri=http://10.108.3.156:8080/
+
+SERVER VALUES:
+server_version=nginx: 1.10.0 - lua: 10001
+
+HEADERS RECEIVED:
+accept=*/*
+host=10.108.3.156
+user-agent=curl/7.64.0
+BODY:
+-no body in request-root
+```
 
 ### NodePort
 
@@ -168,9 +207,9 @@ metadata:
   name: funkynode
 spec:
   ports:
-  - port: 80
-    protocol: TCP
-    targetPort: 8080
+    - port: 80
+      protocol: TCP
+      targetPort: 8080
   selector:
     app: funkyapp1
   type: NodePort #Note this!
@@ -186,14 +225,14 @@ This service is available on each node at a specific port.
 Name:                     funkynode
 Namespace:                default
 Labels:                   app=funkyapp1
-Annotations:              <none>
+Annotations:              cloud.google.com/neg: {"ingress":true}
 Selector:                 app=funkyapp1
 Type:                     NodePort
-IP:                       10.109.180.28
+IP:                       10.108.5.37
 Port:                     <unset>  80/TCP
 TargetPort:               8080/TCP
-NodePort:                 <unset>  32332/TCP #This is the node port
-Endpoints:                192.168.15.214:8080
+NodePort:                 <unset>  30182/TCP
+Endpoints:                10.104.2.7:8080
 Session Affinity:         None
 External Traffic Policy:  Cluster
 Events:                   <none>
@@ -201,28 +240,30 @@ Events:                   <none>
 
 ---
 
-By using the node IP address with the `nodePort` value, we can see the desired payload. Make sure to scale the deployment so that each node is running one replica of the pod. For a cluster with 2 worker nodes, this can be done with `kubectl scale deploy funkyapp1 --replicas=2`.
+By using the node IP address with the `nodePort` value, we can see the desired payload. Make sure to scale the deployment so that each node is running one replica of the pod. For a cluster with 2 worker nodes, this can be done with `kubectl scale deploy funkyapp1 --replicas=3`.
 
-`curl 10.121.8.239:32332`
+From there, it is possible to `curl` directly to a node IP address using the `nodePort` when using the shell pod demo. If working from outside the pod network, use the service IP address.
+
+`curl 10.128.0.14:30182`
 
 ```bash
 CLIENT VALUES:
-client_address=10.121.8.239
+client_address=10.128.0.14
 command=GET
 real path=/
 query=nil
 request_version=1.1
-request_uri=http://10.121.8.239:8080/
+request_uri=http://10.128.0.14:8080/
 
 SERVER VALUES:
 server_version=nginx: 1.10.0 - lua: 10001
 
 HEADERS RECEIVED:
 accept=*/*
-host=10.121.8.239:32332
-user-agent=curl/7.58.0
+host=10.128.0.14:30182
+user-agent=curl/7.64.0
 BODY:
--no body in request-
+-no body in request-root
 ```
 
 ### LoadBalancer
@@ -243,9 +284,9 @@ metadata:
   name: funkylb
 spec:
   ports:
-  - port: 80
-    protocol: TCP
-    targetPort: 8080
+    - port: 80
+      protocol: TCP
+      targetPort: 8080
   selector:
     app: funkyapp1
   type: LoadBalancer #Note this!
@@ -258,13 +299,33 @@ Get information on the `funkylb` service to determine the External IP address.
 `kubectl get svc funkylb`
 
 ```bash
-NAME      TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
-funkylb   LoadBalancer   10.111.6.199   1.2.3.4       80:30648/TCP   2m38s
+NAME      TYPE           CLUSTER-IP      EXTERNAL-IP     PORT(S)        AGE
+funkylb   LoadBalancer   10.108.11.148   35.232.149.96   80:31679/TCP   64s
 ```
 
-It is then possible to retrieve the payload using the External IP address and port value.
+It is then possible to retrieve the payload using the External IP address and port value from anywhere on the Internet; no need to use the pod shell demo!
 
-`curl http://1.2.3.4:80`
+`curl 35.232.149.96:80`
+
+```bash
+CLIENT VALUES:
+client_address=10.104.2.1
+command=GET
+real path=/
+query=nil
+request_version=1.1
+request_uri=http://35.232.149.96:8080/
+
+SERVER VALUES:
+server_version=nginx: 1.10.0 - lua: 10001
+
+HEADERS RECEIVED:
+accept=*/*
+host=35.232.149.96
+user-agent=curl/7.55.1
+BODY:
+-no body in request-
+```
 
 ### ExternalIP
 
@@ -295,10 +356,250 @@ spec:
 ### ExternalName
 
 - Maps the Service to the contents of the externalName field (e.g. foo.bar.example.com), by returning a CNAME record with its value.
-- No proxying of any kind is set up.
+- No proxy of any kind is set up.
+
+### Networking Cleanup for Objective 3.3
+
+Run these commands to cleanup the resources, if desired.
+
+```bash
+kubectl delete svc funkyip
+kubectl delete svc funkynode
+kubectl delete svc funkylb
+kubectl delete deploy funkyapp1
+```
 
 ## 3.4 Know How To Use Ingress Controllers And Ingress Resources
 
+Ingress exposes HTTP and HTTPS routes from outside the cluster to services within the cluster.
+
+- Traffic routing is controlled by rules defined on the **Ingress resource**.
+- An **Ingress controller** is responsible for fulfilling the Ingress, usually with a load balancer, though it may also configure your edge router or additional frontends to help handle the traffic.
+  - For example, the [NGINX Ingress Controller for Kubernetes](https://www.nginx.com/products/nginx/kubernetes-ingress-controller)
+- The name of an Ingress object must be a valid DNS subdomain name.
+- [Ingress Documentation](https://kubernetes.io/docs/concepts/services-networking/ingress/)
+- A list of [Ingress Controllers](https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/)
+- [Katacoda - Create Ingress Routing](https://www.katacoda.com/courses/kubernetes/create-kubernetes-ingress-routes) lab
+- [Katacoda - Nginx on Kubernetes](https://www.katacoda.com/javajon/courses/kubernetes-applications/nginx) lab
+
+Example of an ingress resource:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: minimal-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /testpath
+            pathType: Prefix
+            backend:
+              service:
+                name: test
+                port:
+                  number: 80
+```
+
+Information on some of the objects within this resource:
+
+- [Ingress Rules](https://kubernetes.io/docs/concepts/services-networking/ingress/#ingress-rules)
+- [Path Types](https://kubernetes.io/docs/concepts/services-networking/ingress/#path-types)
+
+And, in the case of Nginx, [a custom resource definition (CRD) is often used](https://octopus.com/blog/nginx-ingress-crds) to extend the usefulness of an ingress. An example is shown below:
+
+```yaml
+apiVersion: k8s.nginx.org/v1
+kind: VirtualServer
+metadata:
+  name: cafe
+spec:
+  host: cafe.example.com
+  tls:
+    secret: cafe-secret
+  upstreams:
+    - name: tea
+      service: tea-svc
+      port: 80
+    - name: coffee
+      service: coffee-svc
+      port: 80
+  routes:
+    - path: /tea
+      action:
+        pass: tea
+    - path: /coffee
+      action:
+        pass: coffee
+```
+
 ## 3.5 Know How To Configure And Use CoreDNS
 
+CoreDNS is a general-purpose authoritative DNS server that can serve as cluster DNS.
+
+- A bit of history:
+  - As of Kubernetes v1.12, CoreDNS is the recommended DNS Server, replacing `kube-dns`.
+  - In Kubernetes version 1.13 and later the CoreDNS feature gate is removed and CoreDNS is used by default.
+  - In Kubernetes 1.18, `kube-dns` usage with kubeadm has been deprecated and will be removed in a future version.
+- [Using CoreDNS for Service Discovery](https://kubernetes.io/docs/tasks/administer-cluster/coredns/)
+- [Customizing DNS Service](https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/)
+
+CoreDNS is installed with the following default [Corefile](https://coredns.io/2017/07/23/corefile-explained/) configuration:
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns
+  namespace: kube-system
+data:
+  Corefile: |
+    .:53 {
+        errors
+        health {
+            lameduck 5s
+        }
+        ready
+        kubernetes cluster.local in-addr.arpa ip6.arpa {
+            pods insecure
+            fallthrough in-addr.arpa ip6.arpa
+            ttl 30
+        }
+        prometheus :9153
+        forward . /etc/resolv.conf
+        cache 30
+        loop
+        reload
+        loadbalance
+    }
+```
+
+If you need to customize CoreDNS behavior, you create and apply your own ConfigMap to override settings in the Corefile. The [Configuring DNS Servers for Kubernetes Clusters](https://docs.cloud.oracle.com/en-us/iaas/Content/ContEng/Tasks/contengconfiguringdnsserver.htm) document describes this in detail.
+
+---
+
+Review your configmaps for the `kube-system` namespace to determine if there is a `coredns-custom` configmap.
+
+`kubectl get configmaps --namespace=kube-system`
+
+```bash
+NAME                                 DATA   AGE
+cluster-kubestore                    0      23h
+clustermetrics                       0      23h
+extension-apiserver-authentication   6      24h
+gke-common-webhook-lock              0      23h
+ingress-gce-lock                     0      23h
+ingress-uid                          2      23h
+kube-dns                             0      23h
+kube-dns-autoscaler                  1      23h
+metrics-server-config                1      23h
+```
+
+---
+
+Create a file named `coredns.yml` containing a configmap with the desired DNS entries in the `data` field such as the example below:
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns-custom
+  namespace: kube-system
+data:
+  example.server:
+    | # All custom server files must have a “.server” file extension.
+    # Change example.com to the domain you wish to forward.
+    example.com {
+      # Change 1.1.1.1 to your customer DNS resolver.
+      forward . 1.1.1.1
+    }
+```
+
+---
+
+Apply the configmap.
+
+`kubectl apply -f coredns.yml`
+
+---
+
+Validate the existence of the `coredns-custom` configmap.
+
+`kubectl get configmaps --namespace=kube-system`
+
+```bash
+NAME                                 DATA   AGE
+cluster-kubestore                    0      24h
+clustermetrics                       0      24h
+coredns-custom                       1      6s
+extension-apiserver-authentication   6      24h
+gke-common-webhook-lock              0      24h
+ingress-gce-lock                     0      24h
+ingress-uid                          2      24h
+kube-dns                             0      24h
+kube-dns-autoscaler                  1      24h
+metrics-server-config                1      24h
+```
+
+---
+
+Get the configmap and output the value in yaml format.
+
+`kubectl get configmaps --namespace=kube-system coredns-custom -o yaml`
+
+```yaml
+apiVersion: v1
+data:
+  example.server: |
+    # Change example.com to the domain you wish to forward.
+    example.com {
+      # Change 1.1.1.1 to your customer DNS resolver.
+      forward . 1.1.1.1
+    }
+kind: ConfigMap
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","data":{"example.server":"# Change example.com to the domain you wish to forward.\nexample.com {\n  # Change 1.1.1.1 to your customer DNS resolver.\n  forward . 1.1.1.1\n}\n"},"kind":"ConfigMap","metadata":{"annotations":{},"name":"coredns-custom","namespace":"kube-system"}}
+  creationTimestamp: "2020-10-27T19:49:24Z"
+  managedFields:
+    - apiVersion: v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:data:
+          .: {}
+          f:example.server: {}
+        f:metadata:
+          f:annotations:
+            .: {}
+            f:kubectl.kubernetes.io/last-applied-configuration: {}
+      manager: kubectl-client-side-apply
+      operation: Update
+      time: "2020-10-27T19:49:24Z"
+  name: coredns-custom
+  namespace: kube-system
+  resourceVersion: "519480"
+  selfLink: /api/v1/namespaces/kube-system/configmaps/coredns-custom
+  uid: 8d3250a5-cbb4-4f01-aae3-4e83bd158ebe
+```
+
 ## 3.6 Choose An Appropriate Container Network Interface Plugin
+
+Generally, it seems that Flannel is good for starting out in a very simplified environment, while Calico (and others) extend upon the basic functionality to meet design-specific requirements.
+
+- [Network Plugins](https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/)
+- [Choosing a CNI Network Provider for Kubernetes](https://chrislovecnm.com/kubernetes/cni/choosing-a-cni-provider/)
+- [Comparing Kubernetes CNI Providers: Flannel, Calico, Canal, and Weave](https://rancher.com/blog/2019/2019-03-21-comparing-kubernetes-cni-providers-flannel-calico-canal-and-weave/)
+
+Common decision points include:
+
+- Network Model: Layer 2, Layer 3, VXLAN, etc.
+- Routing: Routing and route distribution for pod traffic between nodes
+- Network Policy: Essentially the firewall between network / pod segments
+- IP Address Management (IPAM)
+- Datastore:
+  - `etcd` - for direct connection to an etcd cluster
+  - Kubernetes - for connection to a Kubernetes API server
