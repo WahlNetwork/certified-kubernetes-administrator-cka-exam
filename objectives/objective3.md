@@ -1,7 +1,5 @@
 # Objective 3: Services & Networking
 
-> ⚠ This section is not complete ⚠
-
 - [Objective 3: Services & Networking](#objective-3-services--networking)
   - [3.1 Understand Host Networking Configuration On The Cluster Nodes](#31-understand-host-networking-configuration-on-the-cluster-nodes)
   - [3.2 Understand Connectivity Between Pods](#32-understand-connectivity-between-pods)
@@ -589,3 +587,19 @@ metadata:
 ```
 
 ## 3.6 Choose An Appropriate Container Network Interface Plugin
+
+Generally, it seems that Flannel is good for starting out in a very simplified environment, while Calico (and others) extend upon the basic functionality to meet design-specific requirements.
+
+- [Network Plugins](https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/)
+- [Choosing a CNI Network Provider for Kubernetes](https://chrislovecnm.com/kubernetes/cni/choosing-a-cni-provider/)
+- [Comparing Kubernetes CNI Providers: Flannel, Calico, Canal, and Weave](https://rancher.com/blog/2019/2019-03-21-comparing-kubernetes-cni-providers-flannel-calico-canal-and-weave/)
+
+Common decision points include:
+
+- Network Model: Layer 2, Layer 3, VXLAN, etc.
+- Routing: Routing and route distribution for pod traffic between nodes
+- Network Policy: Essentially the firewall between network / pod segments
+- IP Address Management (IPAM)
+- Datastore:
+  - `etcd` - for direct connection to an etcd cluster
+  - Kubernetes - for connection to a Kubernetes API server
