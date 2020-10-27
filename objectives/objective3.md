@@ -2,29 +2,32 @@
 
 > ⚠ This section is not complete ⚠
 
-- [3.1 Understand Host Networking Configuration On The Cluster Nodes](#31-understand-host-networking-configuration-on-the-cluster-nodes)
-- [3.2 Understand Connectivity Between Pods](#32-understand-connectivity-between-pods)
-- [3.3 Understand ClusterIP, NodePort, LoadBalancer Service Types And Endpoints](#33-understand-clusterip-nodeport-loadbalancer-service-types-and-endpoints)
-  - [ClusterIP](#clusterip)
-  - [NodePort](#nodeport)
-  - [LoadBalancer](#loadbalancer)
-  - [ExternalIP](#externalip)
-  - [ExternalName](#externalname)
-  - [Networking Cleanup for Objective 3.3](#networking-cleanup-for-objective-33)
-- [3.4 Know How To Use Ingress Controllers And Ingress Resources](#34-know-how-to-use-ingress-controllers-and-ingress-resources)
-- [3.5 Know How To Configure And Use CoreDNS](#35-know-how-to-configure-and-use-coredns)
-- [3.6 Choose An Appropriate Container Network Interface Plugin](#36-choose-an-appropriate-container-network-interface-plugin)
+- [Objective 3: Services & Networking](#objective-3-services--networking)
+  - [3.1 Understand Host Networking Configuration On The Cluster Nodes](#31-understand-host-networking-configuration-on-the-cluster-nodes)
+  - [3.2 Understand Connectivity Between Pods](#32-understand-connectivity-between-pods)
+  - [3.3 Understand ClusterIP, NodePort, LoadBalancer Service Types And Endpoints](#33-understand-clusterip-nodeport-loadbalancer-service-types-and-endpoints)
+    - [ClusterIP](#clusterip)
+    - [NodePort](#nodeport)
+    - [LoadBalancer](#loadbalancer)
+    - [ExternalIP](#externalip)
+    - [ExternalName](#externalname)
+    - [Networking Cleanup for Objective 3.3](#networking-cleanup-for-objective-33)
+  - [3.4 Know How To Use Ingress Controllers And Ingress Resources](#34-know-how-to-use-ingress-controllers-and-ingress-resources)
+  - [3.5 Know How To Configure And Use CoreDNS](#35-know-how-to-configure-and-use-coredns)
+  - [3.6 Choose An Appropriate Container Network Interface Plugin](#36-choose-an-appropriate-container-network-interface-plugin)
 
 > Note: If you need access to the pod network while working through the networking examples, use the [Get a Shell to a Running Container](https://kubernetes.io/docs/tasks/debug-application-cluster/get-shell-running-container/) guide to deploy a shell container. I often like to have a tab open to the shell container to run arbitrary network commands without the need to `exec` in and out of it repeatedly.
 
 ## 3.1 Understand Host Networking Configuration On The Cluster Nodes
 
 - Design
+
   - All nodes can talk
   - All pods can talk (without NAT)
   - Every pod gets a unique IP address
 
 - Network Types
+
   - Pod Network
   - Node Network
   - Services Network
@@ -93,9 +96,9 @@ metadata:
   name: funkyip
 spec:
   ports:
-  - port: 80
-    protocol: TCP
-    targetPort: 8080
+    - port: 80
+      protocol: TCP
+      targetPort: 8080
   selector:
     app: funkyapp1
   type: ClusterIP #Note this!
@@ -206,9 +209,9 @@ metadata:
   name: funkynode
 spec:
   ports:
-  - port: 80
-    protocol: TCP
-    targetPort: 8080
+    - port: 80
+      protocol: TCP
+      targetPort: 8080
   selector:
     app: funkyapp1
   type: NodePort #Note this!
@@ -283,9 +286,9 @@ metadata:
   name: funkylb
 spec:
   ports:
-  - port: 80
-    protocol: TCP
-    targetPort: 8080
+    - port: 80
+      protocol: TCP
+      targetPort: 8080
   selector:
     app: funkyapp1
   type: LoadBalancer #Note this!
@@ -392,15 +395,15 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   rules:
-  - http:
-      paths:
-      - path: /testpath
-        pathType: Prefix
-        backend:
-          service:
-            name: test
-            port:
-              number: 80
+    - http:
+        paths:
+          - path: /testpath
+            pathType: Prefix
+            backend:
+              service:
+                name: test
+                port:
+                  number: 80
 ```
 
 Information on some of the objects within this resource:
@@ -420,24 +423,24 @@ spec:
   tls:
     secret: cafe-secret
   upstreams:
-  - name: tea
-    service: tea-svc
-    port: 80
-  - name: coffee
-    service: coffee-svc
-    port: 80
+    - name: tea
+      service: tea-svc
+      port: 80
+    - name: coffee
+      service: coffee-svc
+      port: 80
   routes:
-  - path: /tea
-    action:
-      pass: tea
-  - path: /coffee
-    action:
-      pass: coffee
+    - path: /tea
+      action:
+        pass: tea
+    - path: /coffee
+      action:
+        pass: coffee
 ```
 
 ## 3.5 Know How To Configure And Use CoreDNS
 
-CoreDNS is a general-purpose authoritative DNS server that can serve as cluster DNS. 
+CoreDNS is a general-purpose authoritative DNS server that can serve as cluster DNS.
 
 - A bit of history:
   - As of Kubernetes v1.12, CoreDNS is the recommended DNS Server, replacing `kube-dns`.
@@ -474,6 +477,115 @@ data:
         reload
         loadbalance
     }
+```
+
+If you need to customize CoreDNS behavior, you create and apply your own ConfigMap to override settings in the Corefile. The [Configuring DNS Servers for Kubernetes Clusters](https://docs.cloud.oracle.com/en-us/iaas/Content/ContEng/Tasks/contengconfiguringdnsserver.htm) document describes this in detail.
+
+---
+
+Review your configmaps for the `kube-system` namespace to determine if there is a `coredns-custom` configmap.
+
+`kubectl get configmaps --namespace=kube-system`
+
+```bash
+NAME                                 DATA   AGE
+cluster-kubestore                    0      23h
+clustermetrics                       0      23h
+extension-apiserver-authentication   6      24h
+gke-common-webhook-lock              0      23h
+ingress-gce-lock                     0      23h
+ingress-uid                          2      23h
+kube-dns                             0      23h
+kube-dns-autoscaler                  1      23h
+metrics-server-config                1      23h
+```
+
+---
+
+Create a file named `coredns.yml` containing a configmap with the desired DNS entries in the `data` field such as the example below:
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns-custom
+  namespace: kube-system
+data:
+  example.server:
+    | # All custom server files must have a “.server” file extension.
+    # Change example.com to the domain you wish to forward.
+    example.com {
+      # Change 1.1.1.1 to your customer DNS resolver.
+      forward . 1.1.1.1
+    }
+```
+
+---
+
+Apply the configmap.
+
+`kubectl apply -f coredns.yml`
+
+---
+
+Validate the existence of the `coredns-custom` configmap.
+
+`kubectl get configmaps --namespace=kube-system`
+
+```bash
+NAME                                 DATA   AGE
+cluster-kubestore                    0      24h
+clustermetrics                       0      24h
+coredns-custom                       1      6s
+extension-apiserver-authentication   6      24h
+gke-common-webhook-lock              0      24h
+ingress-gce-lock                     0      24h
+ingress-uid                          2      24h
+kube-dns                             0      24h
+kube-dns-autoscaler                  1      24h
+metrics-server-config                1      24h
+```
+
+---
+
+Get the configmap and output the value in yaml format.
+
+`kubectl get configmaps --namespace=kube-system coredns-custom -o yaml`
+
+```yaml
+apiVersion: v1
+data:
+  example.server: |
+    # Change example.com to the domain you wish to forward.
+    example.com {
+      # Change 1.1.1.1 to your customer DNS resolver.
+      forward . 1.1.1.1
+    }
+kind: ConfigMap
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","data":{"example.server":"# Change example.com to the domain you wish to forward.\nexample.com {\n  # Change 1.1.1.1 to your customer DNS resolver.\n  forward . 1.1.1.1\n}\n"},"kind":"ConfigMap","metadata":{"annotations":{},"name":"coredns-custom","namespace":"kube-system"}}
+  creationTimestamp: "2020-10-27T19:49:24Z"
+  managedFields:
+    - apiVersion: v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:data:
+          .: {}
+          f:example.server: {}
+        f:metadata:
+          f:annotations:
+            .: {}
+            f:kubectl.kubernetes.io/last-applied-configuration: {}
+      manager: kubectl-client-side-apply
+      operation: Update
+      time: "2020-10-27T19:49:24Z"
+  name: coredns-custom
+  namespace: kube-system
+  resourceVersion: "519480"
+  selfLink: /api/v1/namespaces/kube-system/configmaps/coredns-custom
+  uid: 8d3250a5-cbb4-4f01-aae3-4e83bd158ebe
 ```
 
 ## 3.6 Choose An Appropriate Container Network Interface Plugin
