@@ -79,6 +79,7 @@ Fantastic resources from around the world, sorted alphabetically.
 ### 🤗 Community
 
 - [Best Practices for CKA Exam](https://medium.com/@emreodabas_20110/best-practices-for-cka-exam-9c1e51ea9b29)
+- [CKA-Study Guide](https://github.com/David-VTUK/CKA-StudyGuide) by [David-VTUK](https://github.com/David-VTUK)
 - [How I passed the CKA (Certified Kubernetes Administrator) Exam](https://medium.com/platformer-blog/how-i-passed-the-cka-certified-kubernetes-administrator-exam-8943aa24d71d)
 - [How to pass the New CKA exam released at September 2020](https://medium.com/@krishna.sharma1408/how-to-pass-the-new-cka-exam-released-at-september-2020-e0e014d67f78)
 - [Interesting Kubernetes application demos](https://www.virtuallyghetto.com/2020/06/interesting-kubernetes-application-demos.html)
