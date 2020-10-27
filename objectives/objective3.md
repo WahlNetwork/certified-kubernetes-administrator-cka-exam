@@ -370,6 +370,110 @@ kubectl delete deploy funkyapp1
 
 ## 3.4 Know How To Use Ingress Controllers And Ingress Resources
 
+Ingress exposes HTTP and HTTPS routes from outside the cluster to services within the cluster.
+
+- Traffic routing is controlled by rules defined on the **Ingress resource**.
+- An **Ingress controller** is responsible for fulfilling the Ingress, usually with a load balancer, though it may also configure your edge router or additional frontends to help handle the traffic.
+  - For example, the [NGINX Ingress Controller for Kubernetes](https://www.nginx.com/products/nginx/kubernetes-ingress-controller)
+- The name of an Ingress object must be a valid DNS subdomain name.
+- [Ingress Documentation](https://kubernetes.io/docs/concepts/services-networking/ingress/)
+- A list of [Ingress Controllers](https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/)
+- [Katacoda - Create Ingress Routing](https://www.katacoda.com/courses/kubernetes/create-kubernetes-ingress-routes) lab
+- [Katacoda - Nginx on Kubernetes](https://www.katacoda.com/javajon/courses/kubernetes-applications/nginx) lab
+
+Example of an ingress resource:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: minimal-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /testpath
+        pathType: Prefix
+        backend:
+          service:
+            name: test
+            port:
+              number: 80
+```
+
+Information on some of the objects within this resource:
+
+- [Ingress Rules](https://kubernetes.io/docs/concepts/services-networking/ingress/#ingress-rules)
+- [Path Types](https://kubernetes.io/docs/concepts/services-networking/ingress/#path-types)
+
+And, in the case of Nginx, [a custom resource definition (CRD) is often used](https://octopus.com/blog/nginx-ingress-crds) to extend the usefulness of an ingress. An example is shown below:
+
+```yaml
+apiVersion: k8s.nginx.org/v1
+kind: VirtualServer
+metadata:
+  name: cafe
+spec:
+  host: cafe.example.com
+  tls:
+    secret: cafe-secret
+  upstreams:
+  - name: tea
+    service: tea-svc
+    port: 80
+  - name: coffee
+    service: coffee-svc
+    port: 80
+  routes:
+  - path: /tea
+    action:
+      pass: tea
+  - path: /coffee
+    action:
+      pass: coffee
+```
+
 ## 3.5 Know How To Configure And Use CoreDNS
+
+CoreDNS is a general-purpose authoritative DNS server that can serve as cluster DNS. 
+
+- A bit of history:
+  - As of Kubernetes v1.12, CoreDNS is the recommended DNS Server, replacing `kube-dns`.
+  - In Kubernetes version 1.13 and later the CoreDNS feature gate is removed and CoreDNS is used by default.
+  - In Kubernetes 1.18, `kube-dns` usage with kubeadm has been deprecated and will be removed in a future version.
+- [Using CoreDNS for Service Discovery](https://kubernetes.io/docs/tasks/administer-cluster/coredns/)
+- [Customizing DNS Service](https://kubernetes.io/docs/tasks/administer-cluster/dns-custom-nameservers/)
+
+CoreDNS is installed with the following default [Corefile](https://coredns.io/2017/07/23/corefile-explained/) configuration:
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns
+  namespace: kube-system
+data:
+  Corefile: |
+    .:53 {
+        errors
+        health {
+            lameduck 5s
+        }
+        ready
+        kubernetes cluster.local in-addr.arpa ip6.arpa {
+            pods insecure
+            fallthrough in-addr.arpa ip6.arpa
+            ttl 30
+        }
+        prometheus :9153
+        forward . /etc/resolv.conf
+        cache 30
+        loop
+        reload
+        loadbalance
+    }
+```
 
 ## 3.6 Choose An Appropriate Container Network Interface Plugin
