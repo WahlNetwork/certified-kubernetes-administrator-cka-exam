@@ -42,7 +42,7 @@ The CNCF curriculum is posted [here](https://github.com/cncf/curriculum). The pe
 - [Objective 1: Cluster Architecture, Installation & Configuration](objectives/objective1.md) ✔
 - [Objective 2: Workloads & Scheduling](objectives/objective2.md) ✔
 - [Objective 3: Services & Networking](objectives/objective3.md) ✔
-- [Objective 4: Storage](objectives/objective4.md) ⚠ WIP
+- [Objective 4: Storage](objectives/objective4.md) ✔
 - [Objective 5: Troubleshooting](objectives/objective5.md) ⚠ WIP
 
 ## Resources
