@@ -8,20 +8,19 @@ This repository contains a study guide created in preparation for passing the Ce
 
 Every [Exam Objective](#exam-objectives) is broken down into helpful links, commands, videos, scripts, code samples, and more so that you can refer back to this guide during your studies. Everything here is open source and made by a community of inclusive and friendly folks. If you found this project helpful, why not give us a 🌟 to help increase awareness!
 
-- [Certified Kubernetes Administrator (CKA) Exam Study Guide](#certified-kubernetes-administrator-cka-exam-study-guide)
-  - [Project Overview](#project-overview)
-  - [Exam Objectives](#exam-objectives)
-  - [Resources](#resources)
-    - [📝 Official References](#-official-references)
-    - [🎓 Online Training](#-online-training)
-    - [🛠 Tools](#-tools)
-  - [Managed Kubernetes Clusters](#managed-kubernetes-clusters)
-    - [🤗 Community](#-community)
-  - [The Fine Print](#the-fine-print)
-    - [Disclaimer](#disclaimer)
-    - [Contributing](#contributing)
-    - [Code of Conduct](#code-of-conduct)
-    - [License](#license)
+- [Project Overview](#project-overview)
+- [Exam Objectives](#exam-objectives)
+- [Resources](#resources)
+  - [📝 Official References](#-official-references)
+  - [🎓 Online Training](#-online-training)
+  - [🛠 Tools](#-tools)
+- [Managed Kubernetes Clusters](#managed-kubernetes-clusters)
+  - [🤗 Community](#-community)
+- [The Fine Print](#the-fine-print)
+  - [Disclaimer](#disclaimer)
+  - [Contributing](#contributing)
+  - [Code of Conduct](#code-of-conduct)
+  - [License](#license)
 
 ## Project Overview
 
@@ -52,6 +51,7 @@ Fantastic resources from around the world, sorted alphabetically.
 ### 📝 Official References
 
 - [Certified Kubernetes Administrator (CKA) Exam 1.19 Curriculum](https://github.com/cncf/curriculum/blob/master/CKA_Curriculum_v1.19.pdf)
+- [Certified Kubernetes Administrator Exam Registration](https://training.linuxfoundation.org/certification/certified-kubernetes-administrator-cka/)
 - [Enable kubectl autocompletion](https://kubernetes.io/docs/tasks/tools/install-kubectl/#enable-kubectl-autocompletion)
 - [kubectl Cheat Sheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
 - [kubectl Reference Docs](https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands)
