@@ -8,19 +8,20 @@ This repository contains a study guide created in preparation for passing the Ce
 
 Every [Exam Objective](#exam-objectives) is broken down into helpful links, commands, videos, scripts, code samples, and more so that you can refer back to this guide during your studies. Everything here is open source and made by a community of inclusive and friendly folks. If you found this project helpful, why not give us a 🌟 to help increase awareness!
 
-- [Project Overview](#project-overview)
-- [Exam Objectives](#exam-objectives)
-- [Resources](#resources)
-  - [📝 Official References](#-official-references)
-  - [🎓 Online Training](#-online-training)
-  - [🛠 Tools](#-tools)
-- [Managed Kubernetes Clusters](#managed-kubernetes-clusters)
-  - [🤗 Community](#-community)
-- [The Fine Print](#the-fine-print)
-  - [Disclaimer](#disclaimer)
-  - [Contributing](#contributing)
-  - [Code of Conduct](#code-of-conduct)
-  - [License](#license)
+- [Certified Kubernetes Administrator (CKA) Exam Study Guide](#certified-kubernetes-administrator-cka-exam-study-guide)
+  - [Project Overview](#project-overview)
+  - [Exam Objectives](#exam-objectives)
+  - [Resources](#resources)
+    - [📝 Official References](#-official-references)
+    - [🎓 Online Training](#-online-training)
+    - [🛠 Tools](#-tools)
+  - [Managed Kubernetes Clusters](#managed-kubernetes-clusters)
+    - [🤗 Community](#-community)
+  - [The Fine Print](#the-fine-print)
+    - [Disclaimer](#disclaimer)
+    - [Contributing](#contributing)
+    - [Code of Conduct](#code-of-conduct)
+    - [License](#license)
 
 ## Project Overview
 
@@ -42,7 +43,7 @@ The CNCF curriculum is posted [here](https://github.com/cncf/curriculum). The pe
 - [Objective 2: Workloads & Scheduling](objectives/objective2.md) ✔
 - [Objective 3: Services & Networking](objectives/objective3.md) ✔
 - [Objective 4: Storage](objectives/objective4.md) ✔
-- [Objective 5: Troubleshooting](objectives/objective5.md) ⚠ WIP
+- [Objective 5: Troubleshooting](objectives/objective5.md) ✔
 
 ## Resources
 
@@ -86,6 +87,7 @@ Fantastic resources from around the world, sorted alphabetically.
 - [Kubernetes the Hard Way - Kelsey Hightower](https://github.com/kelseyhightower/kubernetes-the-hard-way)
 - [Kubernetes tools and resources from learnk8s](https://learnk8s.io/kubernetes-resources)
 - [Practice Enough With These 150 Questions for the CKAD Exam](https://medium.com/bb-tutorials-and-thoughts/practice-enough-with-these-questions-for-the-ckad-exam-2f42d1228552)
+- [Stack Overflow - Questions tagged kubernetes](https://stackoverflow.com/questions/tagged/kubernetes)
 - [Walidshaari's Kubernetes-Certified-Administrator Repo](https://github.com/walidshaari/Kubernetes-Certified-Administrator)
 
 ## The Fine Print
