@@ -4,9 +4,9 @@
 
 👋🙂 Welcome!
 
-This repository contains a study guide created in preparation for passing the Certified Kubernetes Administrator (CKA) exam. It is a work in progress with regular updates being made via [Twitch live streams](https://www.twitch.tv/wahlnetwork) happening each Tuesday and Thursday at 16:00 Central US.
+This repository contains a study guide created in preparation for passing the Certified Kubernetes Administrator (CKA) exam. All of the content found here was livestreamed on [Twitch](https://www.twitch.tv/wahlnetwork) in collaboration with viewers.
 
-Every [Exam Objective](#exam-objectives) is broken down into helpful links, commands, videos, scripts, code samples, and more so that you can refer back to this guide during your studies. Everything here is open source and made by a community of inclusive and friendly folks. If you found this project helpful, why not give us a 🌟 to help increase awareness!
+Each [Exam Objective](#exam-objectives) is broken down into helpful links, commands, videos, scripts, code samples, and more so that you can refer back to this guide during your studies. Everything here is open source and made by a community of inclusive and friendly folks. If you found this project helpful, why not give us a 🌟star🌟 to help increase awareness!
 
 - [Certified Kubernetes Administrator (CKA) Exam Study Guide](#certified-kubernetes-administrator-cka-exam-study-guide)
   - [Project Overview](#project-overview)
